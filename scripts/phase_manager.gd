@@ -48,6 +48,7 @@ func _start_game() -> void:
 
 func _start_next_cycle() -> void:
 	current_cycle_id += 1
+	_cycle_completed = false
 	_start_cycle_timeout(current_cycle_id)
 	emit_signal("cycle_started_notify", current_cycle_id)
 
@@ -70,6 +71,11 @@ func _on_decision_received(_decision: String, _patient: Node = null) -> void:
 
 
 func _complete_current_cycle() -> void:
+	# Race Condition Fix: Prevent double-completion (Decision vs Timeout)
+	if _cycle_completed:
+		return
+	_cycle_completed = true
+	
 	emit_signal("cycle_ended_notify", current_cycle_id)
 	
 	# Determine flow
