@@ -1,4 +1,4 @@
-extends control
+extends Control
 ## main_menu.gd
 ## Responsibility: Provide a clinical, minimal entry point with tabbed settings.
 
