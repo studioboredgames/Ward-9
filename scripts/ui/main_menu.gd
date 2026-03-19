@@ -35,9 +35,9 @@ func _on_play() -> void:
 	emit_signal("play_pressed")
 	hide()
 
-func _on_toggle_settings(show: bool) -> void:
-	main_container.visible = !show
-	settings_container.visible = show
+func _on_toggle_settings(p_show: bool) -> void:
+	main_container.visible = !p_show
+	settings_container.visible = p_show
 
 func _on_video_pressed() -> void:
 	var mode = DisplayServer.window_get_mode()
