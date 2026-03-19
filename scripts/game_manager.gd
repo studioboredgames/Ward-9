@@ -122,26 +122,16 @@ func _on_authority_cycle_started(id: int) -> void:
 	
 	if evaluation_manager: evaluation_manager.reset_cycle_timer()
 	
-	# Fan out: notify listeners with the Profile-of-Record (previous)
-	# This ensures the system acts on a "learned" model, not a reactive one
+	# Fan out: notify listeners
 	emit_signal("cycle_started", id)
+	
+	if director:
+		director.register_cycle(id)
+		director.process_cycle()
 	
 	# AnomalyManager specific direct call to avoid signal payload limits
 	if anomaly_manager:
 		anomaly_manager.prepare_cycle(id, previous_profile)
-		# Track history for Temporal Echoes
-		if hallucination_manager:
-			# We need to know WHAT was spawned. 
-			# In reality, AnomalyManager decides inside the call.
-			# Let's add a signal out of AnomalyManager?
-			pass
-	
-	if hallucination_manager:
-		# Delayed Causality: Use profile from 3 cycles ago (N-2)
-		var delayed_profile = {}
-		if profile_history.size() >= 3:
-			delayed_profile = profile_history[0] # The oldest
-		hallucination_manager.prepare_hallucination(id, delayed_profile)
 
 
 func _on_authority_cycle_ended(id: int) -> void:
