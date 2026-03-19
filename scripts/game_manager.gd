@@ -8,7 +8,7 @@ extends Node
 
 signal cycle_started(id: int)
 signal cycle_ended(id: int)
-signal phase_changed(name: String)
+signal phase_changed(phase_name: String)
 signal decision_received(decision: String, patient: Node)
 signal patient_focused(patient: Node)
 signal evaluation_updated(state: String, id: int)
@@ -91,8 +91,8 @@ func _on_authority_cycle_ended(id: int) -> void:
 	emit_signal("cycle_ended", id)
 
 
-func _on_authority_phase_changed(name: String) -> void:
-	emit_signal("phase_changed", name)
+func _on_authority_phase_changed(phase_name: String) -> void:
+	emit_signal("phase_changed", phase_name)
 
 
 func _on_input_patient_focused(patient: Node) -> void:

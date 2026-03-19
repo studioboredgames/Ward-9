@@ -99,9 +99,14 @@ func _raycast() -> Node:
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + forward * ray_length)
 	query.collision_mask = patient_collision_mask
 	var result := space_state.intersect_ray(query)
-	if result.is_empty(): return null
+	if result.is_empty():
+		return null
+	
 	var collider = result.get("collider")
-	return collider if collider and collider.is_in_group("patient") else null
+	if collider and collider.is_in_group("patient"):
+		return collider
+		
+	return null
 
 
 func _process_patient_hit(patient: Node, delta: float) -> void:
@@ -130,8 +135,14 @@ func _process_miss(delta: float) -> void:
 
 func _update_crosshair_visuals(is_targeting: bool) -> void:
 	if not _crosshair: return
-	_crosshair.color = target_color if is_targeting else normal_color
-	_crosshair.scale = Vector2(1.5, 1.5) if is_targeting else Vector2(1.0, 1.0)
+	
+	if is_targeting:
+		_crosshair.color = target_color
+		_crosshair.scale = Vector2(1.5, 1.5)
+	else:
+		_crosshair.color = normal_color
+		_crosshair.scale = Vector2(1.0, 1.0)
+		
 	_crosshair.pivot_offset = _crosshair.size / 2
 
 

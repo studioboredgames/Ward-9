@@ -62,7 +62,7 @@ func get_state_string() -> String:
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
-func _verify_correctness(decision: String, target_patient: Node) -> bool:
+func _verify_correctness(decision: String, _target_patient: Node) -> bool:
 	# Check for ANY anomaly in the ward
 	var patients = get_tree().get_nodes_in_group("patient")
 	var ward_anomalous = false

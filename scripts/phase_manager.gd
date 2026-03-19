@@ -7,7 +7,7 @@ extends Node
 
 signal cycle_started_notify(id: int)
 signal cycle_ended_notify(id: int)
-signal phase_changed_notify(name: String)
+signal phase_changed_notify(phase_name: String)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -39,7 +39,6 @@ func _connect_to_game_manager() -> void:
 
 
 func _start_game() -> void:
-	current_phase_index = 0
 	current_cycle_id = 0
 	emit_signal("phase_changed_notify", PHASES[current_phase_index])
 	_start_next_cycle()

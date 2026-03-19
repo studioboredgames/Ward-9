@@ -13,7 +13,7 @@ extends Node3D
 
 # ─── Private State ────────────────────────────────────────────────────────────
 
-@onready var _light: Light3D = $OmniLight3D # Expects a child light
+@onready var _light: Light3D = self as Light3D
 var _original_energy: float = 1.0
 var _timer: float = 0.0
 
