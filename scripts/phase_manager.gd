@@ -9,6 +9,7 @@ signal phase_changed_notify(phase_name: String)
 # ─── Configuration ────────────────────────────────────────────────────────────
 
 @export var debug_logs: bool = true
+const CYCLES_PER_PHASE: int = 3
 const PHASES: Array[String] = ["normal", "doubt", "distortion", "judgment", "reveal"]
 
 # Tension Scaling: Aggressive Curve 18 -> 15 -> 12 -> 9 -> 6
