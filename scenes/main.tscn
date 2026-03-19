@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://main"]
+[gd_scene load_steps=10 format=3 uid="uid://main"]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/decision_ui.gd" id="6_ui"]
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="7_pc"]
 [ext_resource type="Script" path="res://scripts/player/interaction_system.gd" id="8_is"]
+[ext_resource type="PackedScene" uid="uid://ward" path="res://scenes/rooms/ward.tscn" id="9_wd"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_gm")
@@ -25,6 +26,8 @@ script = ExtResource("4_em")
 script = ExtResource("5_ev")
 
 [node name="World" type="Node3D" parent="."]
+
+[node name="Ward" parent="World" instance=ExtResource("9_wd")]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -61,6 +64,7 @@ layout_mode = 2
 text = "All Normal"
 
 [node name="Player" type="CharacterBody3D" parent="World" groups=["player"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
 script = ExtResource("7_pc")
 
 [node name="Camera3D" type="Camera3D" parent="World/Player" groups=["player_camera"]]

@@ -1,6 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://ward"]
+[gd_scene load_steps=5 format=3 uid="uid://ward"]
 
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_pt"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pt"]
+albedo_color = Color(0.8, 0.8, 0.9, 1)
 
 [node name="Ward" type="Node3D"]
 
@@ -15,19 +26,46 @@ script = ExtResource("1_pt")
 patient_name = "Patient A"
 bed_id = 1
 
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_pt")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_pt")
+surface_material_override/0 = SubResource("StandardMaterial3D_pt")
+
 [node name="PatientB" type="CharacterBody3D" parent="." groups=["patient"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, -2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2)
 collision_layer = 4
 script = ExtResource("1_pt")
 patient_name = "Patient B"
 bed_id = 2
 
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_pt")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_pt")
+surface_material_override/0 = SubResource("StandardMaterial3D_pt")
+
 [node name="PatientC" type="CharacterBody3D" parent="." groups=["patient"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 2, 0, -2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
 collision_layer = 4
 script = ExtResource("1_pt")
 patient_name = "Patient C"
 bed_id = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_pt")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_pt")
+surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 0)
