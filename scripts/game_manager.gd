@@ -67,6 +67,10 @@ func _on_play_pressed() -> void:
 	if phase_manager:
 		phase_manager.start_game()
 	
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("force_activate"):
+		player.force_activate()
+	
 	if interaction_system:
 		interaction_system.enable_interaction()
 	

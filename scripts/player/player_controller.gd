@@ -7,7 +7,7 @@ extends CharacterBody3D
 # ─── Configuration ────────────────────────────────────────────────────────────
 
 @export var move_speed: float = 3.0          ## Walking speed (m/s)
-@export var mouse_sensitivity: float = 0.002 ## Radians per pixel
+@export var mouse_sensitivity: float = 0.003 ## Radians per pixel (Increased)
 
 # ─── Node References ──────────────────────────────────────────────────────────
 
@@ -23,6 +23,10 @@ var _gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 func _ready() -> void:
 	add_to_group("player")
 	camera.add_to_group("player_camera")
+
+
+func force_activate() -> void:
+	_movement_enabled = true
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
