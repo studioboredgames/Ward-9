@@ -101,6 +101,14 @@ func _apply_movement() -> void:
 	var input_dir := Input.get_vector(
 		"move_left", "move_right", "move_forward", "move_back"
 	)
+	
+	# Fallback if actions are not mapped
+	if input_dir.length_squared() == 0:
+		if Input.is_key_pressed(KEY_W): input_dir.y -= 1.0
+		if Input.is_key_pressed(KEY_S): input_dir.y += 1.0
+		if Input.is_key_pressed(KEY_A): input_dir.x -= 1.0
+		if Input.is_key_pressed(KEY_D): input_dir.x += 1.0
+		input_dir = input_dir.normalized()
 	# Input.get_vector() already returns a normalized vector for diagonal input.
 	# Applying .normalized() again after basis transform is redundant and can
 	# produce subtle floating-point drift on diagonal movement.

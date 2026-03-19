@@ -68,7 +68,7 @@ autoplay = true
 [node name="Ward" parent="World" instance=ExtResource("9_wd")]
 
 [node name="Player" type="CharacterBody3D" parent="World" groups=["player"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15) # Start in the Hallway (Outside intro simulation)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 script = ExtResource("7_pc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="World/Player"]
