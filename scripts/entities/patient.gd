@@ -23,6 +23,9 @@ var _state_history: Array = []
 const HISTORY_LIMIT := 5
 var _is_lingering: bool = false
 var _is_eye_lagging: bool = false
+var current_anomaly: String = ""
+var _anomaly_intensity: float = 1.0
+var _breath_time: float = 0.0
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
