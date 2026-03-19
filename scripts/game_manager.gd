@@ -75,7 +75,6 @@ func _connect_signals() -> void:
 	
 	# 5. External listeners (Anomaly, Event) connect to this router
 	self.cycle_ended.connect(anomaly_manager.cleanup_cycle)
-	if hallucination_manager: self.cycle_ended.connect(hallucination_manager.cleanup_hallucination)
 	self.phase_changed.connect(anomaly_manager.handle_phase_shift)
 	self.phase_changed.connect(event_manager.handle_phase_shift)
 	self.cycle_started.connect(event_manager.on_cycle_started)
