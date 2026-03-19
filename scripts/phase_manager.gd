@@ -11,6 +11,7 @@ signal phase_changed_notify(phase_name: String)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
+@export var debug_logs: bool = true
 const CYCLES_PER_PHASE: int = 3
 const PHASES: Array[String] = ["shift_start", "midnight", "pre_dawn"]
 const CYCLE_TIMEOUT: float = 30.0 ## Seconds before auto-completing cycle
@@ -30,16 +31,12 @@ func _ready() -> void:
 
 
 func _connect_to_game_manager() -> void:
-	# Coupling Fix: Use group lookup instead of get_parent()
-	var gm = get_tree().get_first_node_in_group("game_manager")
-	if gm:
-		if gm.has_signal("decision_received"):
-			gm.decision_received.connect(_on_decision_received)
-	else:
-		push_error("phase_manager: game_manager not found in group")
+	# Note: gm now connects to US via its _connect_signals loop
+	pass
 
 
 func _start_game() -> void:
+	current_phase_index = 0
 	current_cycle_id = 0
 	emit_signal("phase_changed_notify", PHASES[current_phase_index])
 	_start_next_cycle()
@@ -59,8 +56,19 @@ func _start_cycle_timeout(cycle_id: int) -> void:
 	await get_tree().create_timer(CYCLE_TIMEOUT).timeout
 	
 	# Validity Check: Only complete if this specific cycle is still active
-	if cycle_id == current_cycle_id:
-		print("Phase Authority: Cycle timeout reached. Auto-completing.")
+	if cycle_id == current_cycle_id and not _cycle_completed:
+		if debug_logs: print("Phase Authority: Cycle timeout reached. Emitting synthetic decision.")
+		_trigger_synthetic_decision()
+
+
+func _trigger_synthetic_decision() -> void:
+	var gm = get_tree().get_first_node_in_group("game_manager")
+	if gm:
+		# Use "All Normal" as safest fallback, or a specific "no_decision" value
+		if gm.has_signal("decision_received"):
+			gm.emit_signal("decision_received", "no_decision", null)
+	else:
+		# Fail-safe: complete locally if router is lost
 		_complete_current_cycle()
 
 
@@ -102,4 +110,4 @@ func _advance_phase() -> void:
 
 
 func _end_shift() -> void:
-	print("Phase Authority: Shift completed.")
+	if debug_logs: print("Phase Authority: Shift completed.")

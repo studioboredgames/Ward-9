@@ -1,99 +1,73 @@
 extends Node
 ## evaluation_manager.gd
-## Responsibility: Judges player behavior and produces evaluation states.
-## Emits evaluation_updated signal to drive horror scaling in event_manager.
+## Responsibility: Score player behavior and emit evaluation state.
+## Deterministic, history-aware scoring system.
 
-# ─── Signals ──────────────────────────────────────────────────────────────────
-
-## Emitted when evaluation state changes.
-## Direct subscriber: event_manager (allowed reactive exception).
 signal evaluation_updated(state: String, cycle_id: int)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-@export var suspicion_threshold: int = 2
-@export var failure_threshold: int = 4
+@export var suspicious_threshold: float = 0.5 ## Error rate to trigger suspicion
+@export var fail_threshold: float = 0.8       ## Error rate for shift failure
 
-# ─── Public State ─────────────────────────────────────────────────────────────
+# ─── State ────────────────────────────────────────────────────────────────────
 
-enum State { STABLE, SUSPICIOUS, FAILED }
-var current_state: State = State.STABLE
-
-# ─── Private State ────────────────────────────────────────────────────────────
-
-var _mistakes_made: int = 0
-var _player_behavior_log: Array[Dictionary] = []
-
-# ─── Lifecycle ────────────────────────────────────────────────────────────────
-
-func _ready() -> void:
-	add_to_group("evaluation_manager")
+var _history: Array = []  # [{cycle_id, correct: bool, patient: Node, decision: String}]
+var _error_count: int = 0
+var _total: int = 0
 
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-## Called by game_manager after cycle_end + delay (now context-rich).
-func log_decision(decision: String, cycle_id: int, patient: Node = null) -> void:
-	# Cross-reference decision with actual anomaly state
-	var is_correct = _verify_correctness(decision, patient)
-	
-	var entries = {
+func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
+	var correct := _is_correct(decision, patient)
+
+	_total += 1
+	if not correct:
+		_error_count += 1
+
+	_history.append({
 		"cycle_id": cycle_id,
-		"decision": decision,
-		"correct": is_correct,
-		"timestamp": Time.get_ticks_msec()
-	}
-	_player_behavior_log.append(entries)
-	
-	if not is_correct:
-		_mistakes_made += 1
-		_update_state(cycle_id)
-	else:
-		# Even if correct, patterns like high speed or hesitation 
-		# can be evaluated here to shift state to SUSPICIOUS.
-		pass
+		"correct": correct,
+		"patient": patient,
+		"decision": decision
+	})
 
+	var error_rate := float(_error_count) / float(max(_total, 1))
+	var state := _derive_state(error_rate)
 
-func get_state_string() -> String:
-	match current_state:
-		State.STABLE: return "stable"
-		State.SUSPICIOUS: return "suspicious"
-		State.FAILED: return "failed"
-	return "stable"
+	emit_signal("evaluation_updated", state, cycle_id)
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
-func _verify_correctness(decision: String, _target_patient: Node) -> bool:
-	# Check for ANY anomaly in the ward
-	var patients = get_tree().get_nodes_in_group("patient")
-	var ward_anomalous = false
-	for p in patients:
-		if p.is_anomalous():
-			ward_anomalous = true
-			break
+func _is_correct(decision: String, patient: Node) -> bool:
+	if patient == null:
+		# treat no target (timeout) as incorrect if an anomaly was present
+		var has_any := _any_anomalies_present()
+		return (decision == "all_normal" or decision == "no_decision") and not has_any
+
+	# Target patient must expose the visible anomaly flag
+	if not patient.has_method("has_visible_anomaly"):
+		return false
+
+	var has_anomaly := patient.has_visible_anomaly()
 	
-	# Logic:
-	# "All Normal" is ONLY correct if ZERO patients are anomalous.
-	if decision == "all_normal":
-		return not ward_anomalous
-		
-	# "Something Wrong" is correct if ANYONE is anomalous,
-	# but we can optionally check if the player was focused on THE anomaly.
-	if decision == "something_wrong":
-		# For harder evaluation: check if target_patient == anomaly
-		return ward_anomalous
+	if decision == "Something Wrong":
+		return has_anomaly
+	if decision == "All Normal":
+		return not has_anomaly
 		
 	return false
 
+func _derive_state(error_rate: float) -> String:
+	if error_rate >= fail_threshold:
+		return "failed"
+	elif error_rate >= suspicious_threshold:
+		return "suspicious"
+	return "stable"
 
-func _update_state(cycle_id: int) -> void:
-	var prev_state = current_state
-	
-	if _mistakes_made >= failure_threshold:
-		current_state = State.FAILED
-	elif _mistakes_made >= suspicion_threshold:
-		current_state = State.SUSPICIOUS
-	else:
-		current_state = State.STABLE
-		
-	if current_state != prev_state:
-		emit_signal("evaluation_updated", get_state_string(), cycle_id)
+func _any_anomalies_present() -> bool:
+	var patients = get_tree().get_nodes_in_group("patient")
+	for p in patients:
+		if p.has_method("has_visible_anomaly") and p.has_visible_anomaly():
+			return true
+	return false

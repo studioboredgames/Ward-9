@@ -13,6 +13,10 @@ signal decision_received(decision: String, patient: Node)
 signal patient_focused(patient: Node)
 signal evaluation_updated(state: String, id: int)
 
+# ─── Configuration ────────────────────────────────────────────────────────────
+
+@export var debug_logs: bool = true
+
 # ─── Transit Memory ───────────────────────────────────────────────────────────
 
 var last_decision: String = ""
@@ -76,6 +80,9 @@ func _connect_signals() -> void:
 	self.cycle_started.connect(event_manager.on_cycle_started)
 	self.evaluation_updated.connect(event_manager.process_evaluation)
 
+	# 6. Authority (PhaseManager) also reacts to the router
+	self.decision_received.connect(phase_manager._on_decision_received)
+
 # ─── Signal Routing (Fan-In -> Fan-Out) ───────────────────────────────────────
 
 func _on_authority_cycle_started(id: int) -> void:
@@ -83,7 +90,7 @@ func _on_authority_cycle_started(id: int) -> void:
 	_decision_locked = false
 	_current_patient = null
 	
-	print("--- Cycle Started: ", id, " ---")
+	if debug_logs: print("--- Cycle Started: ", id, " ---")
 	emit_signal("cycle_started", id)
 
 
@@ -106,12 +113,19 @@ func _on_input_decision_submitted(decision: String) -> void:
 	# Race Condition Fix: Lock decisions once submitted
 	if _decision_locked:
 		return
+		
+	# Validation: Ensure a patient was focused if this is a gameplay decision
+	if _current_patient == null:
+		push_warning("game_manager: decision_submitted with null patient; ignoring")
+		return
+		
 	_decision_locked = true
-	
 	last_decision = decision
-	print("Cycle:", last_cycle_id, " Decision:", decision, " Target:", _current_patient.name if _current_patient else "None")
 	
-	# Timing Fix: Log/Evaluate IMMEDIATELY with patient context
+	if debug_logs: 
+		print("Cycle:", last_cycle_id, " Decision:", decision, " Target:", _current_patient.name)
+	
+	# Invariant: Evaluation happens BEFORE decision_received fan-out
 	if evaluation_manager:
 		evaluation_manager.log_decision(decision, last_cycle_id, _current_patient)
 	

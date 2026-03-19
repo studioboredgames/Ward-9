@@ -1,99 +1,86 @@
 extends Node
 ## anomaly_manager.gd
-## Responsibility: Global authority on selecting and applying anomalies.
-## Ensures all anomalies are player-detectable via visible/audible cues.
-## Patients are display-only; this manager tells them what to show.
+## Responsibility: Assign observable anomalies to patients per cycle.
+## Phase-driven, deterministic selection with light variation.
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-@export var anomaly_chance: float = 0.5  ## Probability of a patient being anomalous
+@export var patients: Array[Node] = []
 
-# ─── Private State ────────────────────────────────────────────────────────────
+# phase → max anomalies
+var _phase_budget := {
+	"shift_start": 1,
+	"midnight": 2,
+	"pre_dawn": 3
+}
 
-var _patient_nodes: Array[Node] = []
+var _current_phase: String = "shift_start"
+var _rng := RandomNumberGenerator.new()
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	add_to_group("anomaly_manager")
-	# Defer finding patients to ensure they are in the tree
-	call_deferred("_find_patients")
-
-# ─── Public API ───────────────────────────────────────────────────────────────
-
-## Called by game_manager at cycle_start.
-func prepare_cycle(cycle_id: int) -> void:
-	_reset_patients()
-	_reset_lights()
-	
-	# Decide which patient (if any) gets an anomaly this cycle
-	var target_patient = _select_random_patient()
-	if target_patient and randf() < anomaly_chance:
-		var anomaly_data = _generate_detectable_anomaly(cycle_id)
-		_apply_anomaly(target_patient, anomaly_data)
+	_rng.randomize()
+	# Defer patient lookup if not assigned
+	if patients.is_empty():
+		call_deferred("_populate_patients")
 
 
-func cleanup_cycle(_id: int) -> void:
-	# Explicit hook for router-driven cleanup if needed
-	pass
+func _populate_patients() -> void:
+	var nodes = get_tree().get_nodes_in_group("patient")
+	for n in nodes:
+		patients.append(n)
 
-
-func _reset_patients() -> void:
-	for patient in _patient_nodes:
-		patient.set_anomaly_state(false)
-
-
-func _reset_lights() -> void:
-	var lights = get_tree().get_nodes_in_group("bed_light")
-	for light in lights:
-		if light.has_method("set_flicker_enabled"):
-			light.set_flicker_enabled(false)
-
+# ─── Hooks from game_manager ──────────────────────────────────────────────────
 
 func handle_phase_shift(phase_name: String) -> void:
-	# Adjust anomaly types or frequency based on phase
-	match phase_name:
-		"midnight":
-			anomaly_chance = 0.6
-		"pre_dawn":
-			anomaly_chance = 0.8
+	_current_phase = phase_name
+
+
+func prepare_cycle(cycle_id: int) -> void:
+	_clear_all()
+	var budget := _phase_budget.get(_current_phase, 1)
+
+	# Deterministic shuffle per cycle using cycle ID as seed component
+	_rng.seed = hash(str(cycle_id) + _current_phase)
+	var pool := patients.duplicate()
+	pool.shuffle()
+
+	for i in range(min(budget, pool.size())):
+		_apply_anomaly(pool[i], cycle_id, i)
+
+
+func cleanup_cycle(_cycle_id: int) -> void:
+	# Optional: decay transient effects or close horror gates
+	pass
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
-func _find_patients() -> void:
-	_patient_nodes = get_tree().get_nodes_in_group("patient")
+func _clear_all() -> void:
+	for p in patients:
+		if p.has_method("clear_anomaly"):
+			p.clear_anomaly()
 
 
-func _select_random_patient() -> Node:
-	if _patient_nodes.is_empty():
-		return null
-	return _patient_nodes.pick_random()
+func _apply_anomaly(patient: Node, cycle_id: int, slot: int) -> void:
+	if not patient.has_method("set_anomaly_state"):
+		return
+
+	# Deterministic variant selection based on cycle and slot
+	var variant := int(abs(hash(str(cycle_id) + str(slot))) % 3)
+
+	var data := {
+		"type": "visual",
+		"variant": variant,
+		"intensity": _phase_intensity()
+	}
+
+	patient.set_anomaly_state(data)
 
 
-func _generate_detectable_anomaly(cycle_id: int) -> Dictionary:
-	# Define a set of detectable anomalies
-	var anomalies = [
-		{"type": "posture", "cue": "unnatural_bend"},
-		{"type": "sound", "cue": "whispering"},
-		{"type": "flicker", "cue": "light_unstable"}
-	]
-	
-	var selected = anomalies.pick_random()
-	selected["cycle_id"] = cycle_id
-	return selected
-
-
-func _apply_anomaly(patient: Node, data: Dictionary) -> void:
-	match data.get("type"):
-		"flicker":
-			# Find the light in the same "PatientUnit" parent
-			var parent = patient.get_parent()
-			if parent:
-				var light = parent.get_node_or_null("BedLight")
-				if light and light.has_method("set_flicker_enabled"):
-					light.set_flicker_enabled(true)
-			# Even for flicker, we mark the patient as "anomalous" 
-			# but they might not have a visual mesh shift.
-			patient.set_anomaly_state(true, data)
-		_:
-			patient.set_anomaly_state(true, data)
+func _phase_intensity() -> float:
+	match _current_phase:
+		"shift_start": return 0.3
+		"midnight": return 0.6
+		"pre_dawn": return 1.0
+	return 0.3
