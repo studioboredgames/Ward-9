@@ -39,7 +39,7 @@ func handle_phase_shift(phase_name: String) -> void:
 
 func prepare_cycle(cycle_id: int) -> void:
 	_clear_all()
-	var budget := _phase_budget.get(_current_phase, 1)
+	var budget : int = _phase_budget.get(_current_phase, 1)
 
 	# Deterministic shuffle per cycle using cycle ID as seed component
 	_rng.seed = hash(str(cycle_id) + _current_phase)

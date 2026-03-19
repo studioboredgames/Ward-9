@@ -40,8 +40,6 @@ func _update_visuals() -> void:
 
 	if not _is_anomalous:
 		mesh.rotation_degrees = Vector3.ZERO
-		mesh.scale = Vector2(1, 1, 1) if mesh is MeshInstance3D else Vector3(1,1,1)
-		# Correcting potential type mismatch in my head—MeshInstance3D uses Vector3 scale
 		mesh.scale = Vector3(1, 1, 1)
 		return
 

@@ -49,7 +49,7 @@ func _is_correct(decision: String, patient: Node) -> bool:
 	if not patient.has_method("has_visible_anomaly"):
 		return false
 
-	var has_anomaly := patient.has_visible_anomaly()
+	var has_anomaly : bool = patient.has_visible_anomaly()
 	
 	if decision == "Something Wrong":
 		return has_anomaly
