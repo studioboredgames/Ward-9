@@ -69,7 +69,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 unit_size = 2.0
 max_db = 0.0
 
-[node name="BedLight" type="OmniLight3D" parent="PatientUnit_A"]
+[node name="BedLight" type="OmniLight3D" parent="PatientUnit_A" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 light_color = Color(1, 0.95, 0.8, 1)
 script = ExtResource("3_fl")
@@ -97,7 +97,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 unit_size = 2.0
 max_db = 0.0
 
-[node name="BedLight" type="OmniLight3D" parent="PatientUnit_B"]
+[node name="BedLight" type="OmniLight3D" parent="PatientUnit_B" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 light_color = Color(1, 0.95, 0.8, 1)
 script = ExtResource("3_fl")
@@ -125,7 +125,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 unit_size = 2.0
 max_db = 0.0
 
-[node name="BedLight" type="OmniLight3D" parent="PatientUnit_C"]
+[node name="BedLight" type="OmniLight3D" parent="PatientUnit_C" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 light_color = Color(1, 0.95, 0.8, 1)
 script = ExtResource("3_fl")
