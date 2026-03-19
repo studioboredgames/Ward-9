@@ -8,6 +8,7 @@ extends Node
 const SILENCE_RATIO = 0.4
 const HALLUCINATION_CHANCE = 0.25
 const TEMPORAL_ECHO_CHANCE = 0.15
+var _ui_lag_active: bool = false
 
 # ─── Private State ────────────────────────────────────────────────────────────
 
@@ -52,6 +53,11 @@ func prepare_hallucination(cycle_id: int, profile: Dictionary) -> void:
 func cleanup_hallucination() -> void:
 	_is_distortion_active = false
 	_last_outcome = "none"
+	_ui_lag_active = false
+
+
+func has_ui_lag() -> bool:
+	return _ui_lag_active
 
 
 func cleanup_phase() -> void:
@@ -152,9 +158,9 @@ func _apply_fake_persistence(patient: Node) -> void:
 	_fake_count_this_phase += 1
 	
 	if patient.has_method("apply_anomaly"):
-		patient.apply_anomaly("tilt") # Start it
-		# Logic: It won't be cleared by the normal cleanup if we flag it?
-		# Or we just re-apply it right after cleanup.
+		patient.apply_anomaly("tilt") 
+		if patient.has_method("set_lingering"):
+			patient.set_lingering(true)
 		print("[Hallucination] Persistence: Fake anomaly will linger on ", patient.name)
 
 
@@ -179,8 +185,7 @@ func _apply_ui_betrayal() -> void:
 		await get_tree().create_timer(0.1).timeout
 		ui.modulate.a = 1.0
 	else:
-		# Shadow delay (implemented via game_manager or locally)
-		pass
+		_ui_lag_active = true
 
 
 func _apply_identity_drift(patient: Node) -> void:

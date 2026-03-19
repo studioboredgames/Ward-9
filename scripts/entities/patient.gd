@@ -21,6 +21,7 @@ var _jitter_cooldown: float = 0.0
 # ─── Memory Violation Buffer ──────────────────────────────────────────────────
 var _state_history: Array = []
 const HISTORY_LIMIT := 5
+var _is_lingering: bool = false
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -65,6 +66,11 @@ func apply_anomaly(type: String, intensity_mult: float = 1.0) -> void:
 
 
 func clear_anomaly(is_unreliable: bool = false) -> void:
+	if _is_lingering:
+		_is_lingering = false
+		print("[Patient] Anomaly lingering (Hallucination active). Skipping clear.")
+		return
+		
 	is_anomalous = false
 	anomaly_type = ""
 

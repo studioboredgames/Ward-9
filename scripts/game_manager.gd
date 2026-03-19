@@ -171,6 +171,10 @@ func _on_input_decision_submitted(decision: String) -> void:
 	
 	_decision_locked = true
 	
+	if hallucination_manager and hallucination_manager.has_ui_lag():
+		print("[GameManager] Injecting Perceptual Lag (Hallucination active)")
+		await get_tree().create_timer(randf_range(0.1, 0.3)).timeout
+	
 	if evaluation_manager:
 		evaluation_manager.log_decision(decision, last_cycle_id, _current_patient)
 	
