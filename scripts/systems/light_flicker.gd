@@ -1,7 +1,8 @@
-extends Node3D
+extends OmniLight3D
 ## light_flicker.gd
 ## Responsibility: Provides subtle, high-tension flickering effects to a light.
 ## Can be triggered globally or via anomaly_manager.
+## Attached to: OmniLight3D node.
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -13,21 +14,19 @@ extends Node3D
 
 # ─── Private State ────────────────────────────────────────────────────────────
 
-@onready var _light: Light3D = self as Light3D
 var _original_energy: float = 1.0
 var _timer: float = 0.0
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	if _light:
-		_original_energy = _light.light_energy
+	_original_energy = light_energy
 
 
 func _process(delta: float) -> void:
-	if not is_flickering or not _light:
-		if _light and _light.light_energy != _original_energy:
-			_light.light_energy = _original_energy
+	if not is_flickering:
+		if light_energy != _original_energy:
+			light_energy = _original_energy
 		return
 	
 	_timer += delta
@@ -37,10 +36,10 @@ func _process(delta: float) -> void:
 
 
 func _apply_flicker() -> void:
-	_light.light_energy = randf_range(flicker_intensity_min, flicker_intensity_max)
+	light_energy = randf_range(flicker_intensity_min, flicker_intensity_max)
 	# Occasionally drop to near zero for tension
 	if randf() < 0.1:
-		_light.light_energy = 0.1
+		light_energy = 0.1
 
 
 func set_flicker_enabled(enabled: bool) -> void:
