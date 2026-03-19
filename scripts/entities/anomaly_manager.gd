@@ -1,10 +1,11 @@
 extends Node
 ## anomaly_manager.gd
 ## Responsibility: Assign observable anomalies to patients per cycle.
-## Pattern-breaking version: Variable spawn counts (None, Single, Double).
+## Patterns: Adaptive Dead Air and Unreliable Fake Anomalies.
 
 const ANOMALIES: Array[String] = ["tilt", "breath", "shift"]
 var patients: Array[Node] = []
+var _current_phase: String = "shift_start"
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -18,20 +19,37 @@ func _collect_patients() -> void:
 	for n in nodes:
 		patients.append(n)
 
+
+func handle_phase_shift(phase_name: String) -> void:
+	_current_phase = phase_name
+
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-func prepare_cycle(_cycle_id: int) -> void:
-	_clear_all()
+func prepare_cycle(cycle_id: int) -> void:
+	_clear_all() # Cleanup previous real ones
 	
 	if patients.is_empty(): return
 
-	# Pattern-Breaker Logic: Induced Uncertainty
-	var roll = randf()
+	# 1. Dead Air Scaling (Probability of NO anomaly)
+	var dead_air_chance = 0.10
+	match _current_phase:
+		"midnight": dead_air_chance = 0.25
+		"pre_dawn": dead_air_chance = 0.40
 	
-	if roll < 0.60:
+	if randf() < dead_air_chance:
+		print("Anomaly Manager: Dead Air. No real anomalies spawned.")
+		# Still a chance for "Fake" ones here to induce paranoia
+		if randf() < 0.3: _apply_fake_effect()
+		return
+
+	# 2. Fake Anomaly Check (20% chance)
+	if randf() < 0.20:
+		_apply_fake_effect()
+
+	# 3. Real Spawn Distribution
+	# Earlier cycles = single, later = chance for double
+	if _current_phase == "shift_start" or randf() < 0.7:
 		_spawn_single()
-	elif roll < 0.85:
-		_spawn_none()
 	else:
 		_spawn_double()
 
@@ -40,36 +58,39 @@ func cleanup_cycle(_cycle_id: int) -> void:
 	pass
 
 
-# ─── Internal Spawning Helpers ───────────────────────────────────────────────
-
-func _spawn_none() -> void:
-	# Intentional false negative/safe cycle
-	print("Anomaly Manager: No anomalies spawned this cycle.")
-
+# ─── Spawning Helpers ─────────────────────────────────────────────────────────
 
 func _spawn_single() -> void:
 	var p = patients.pick_random()
-	var anomaly = ANOMALIES.pick_random()
-	if p.has_method("apply_anomaly"):
-		p.apply_anomaly(anomaly)
-	print("Anomaly Manager: Single anomaly spawned.")
+	p.apply_anomaly(ANOMALIES.pick_random())
 
 
 func _spawn_double() -> void:
 	var shuffled = patients.duplicate()
 	shuffled.shuffle()
+	for i in range(min(2, shuffled.size())):
+		shuffled[i].apply_anomaly(ANOMALIES.pick_random())
+
+
+func _apply_fake_effect() -> void:
+	var p = patients.pick_random()
+	if not p: return
 	
-	# Attempt to spawn 2, but respect patient count
-	var count = min(2, shuffled.size())
-	for i in range(count):
-		var anomaly = ANOMALIES.pick_random()
-		if shuffled[i].has_method("apply_anomaly"):
-			shuffled[i].apply_anomaly(anomaly)
+	# Fake: brief visual shift that DOES NOT fully reset
+	print("Anomaly Manager: Triggering Fake Anomaly on ", p.name)
 	
-	print("Anomaly Manager: Double anomaly spawned.")
+	var tilt = randf_range(3.0, 6.0)
+	p.mesh.rotation_degrees.z += tilt
+	
+	# Delay then PARTIAL reset
+	await get_tree().create_timer(randf_range(0.4, 0.8)).timeout
+	
+	# Only revert 70% of the movement (leave doubt)
+	p.mesh.rotation_degrees.z -= (tilt * 0.7)
 
 
 func _clear_all() -> void:
 	for p in patients:
-		if p.has_method("clear_anomaly"):
-			p.clear_anomaly()
+		# Real ones get a clean reset normally, but we can make it unreliable late game
+		var unreliable = (_current_phase == "pre_dawn") and (randf() < 0.3)
+		p.clear_anomaly(unreliable)

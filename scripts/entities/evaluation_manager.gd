@@ -1,62 +1,58 @@
 extends Node
 ## evaluation_manager.gd
-## Responsibility: Score player behavior and emit evaluation state.
-## Now includes individual decision resolution for loop feedback.
+## Responsibility: Score player behavior and track psychological hesitation.
+## Implements: Mistake counter with delayed feedback and hesitation metrics.
 
 signal evaluation_updated(state: String, cycle_id: int)
-signal decision_resolved(correct: bool) # For immediate player feedback
+signal decision_resolved(correct: bool) 
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-@export var suspicious_threshold: float = 0.5
 @export var fail_threshold: float = 0.8
 
 # ─── State ────────────────────────────────────────────────────────────────────
 
-var _history: Array = []
-var _error_count: int = 0
-var _total: int = 0
+var mistake_count: int = 0
+var _total_cycles: int = 0
+var _cycle_start_time: float = 0.0
 
-# ─── Lifecycle ────────────────────────────────────────────────────────────
+# ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
 	add_to_group("evaluation_manager")
 
+
+func reset_cycle_timer() -> void:
+	_cycle_start_time = Time.get_ticks_msec() / 1000.0
+
 # ─── Public API ───────────────────────────────────────────────────────────────
 
 func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
+	var decision_time = (Time.get_ticks_msec() / 1000.0) - _cycle_start_time
 	var correct := _is_correct(decision, patient)
 
-	# Temporary Feedback Loop (Prints)
-	if correct:
-		print("Evaluation: [CORRECT] Player identified accurately.")
-	else:
-		print("Evaluation: [WRONG] Player missed an anomaly or false alarmed.")
-	
-	# Emit for visual/audio systems to hook into
+	_total_cycles += 1
+	if not correct:
+		mistake_count += 1
+
+	# Subconscious Feedback: Emit for EventManager to schedule LAGGED consequences
 	emit_signal("decision_resolved", correct)
 
-	_total += 1
-	if not correct:
-		_error_count += 1
+	# In Phase 3, we stop printing "CORRECT/WRONG" to hide the system state
+	# instead, we log hesitation for future ambient scaling
+	if decision_time > 8.0:
+		pass # Logic to increase room noise could go here
 
-	_history.append({
-		"cycle_id": cycle_id,
-		"correct": correct,
-		"patient": patient,
-		"decision": decision
-	})
-
-	var error_rate := float(_error_count) / float(max(_total, 1))
+	var error_rate := float(mistake_count) / float(max(_total_cycles, 1))
 	var state := _derive_state(error_rate)
 
 	emit_signal("evaluation_updated", state, cycle_id)
+
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
 func _is_correct(decision: String, patient: Node) -> bool:
 	if patient == null:
-		# Timeout case: correct only if NO anomalies were present in the entire ward
 		return (decision == "no_decision") and not _any_anomalies_present()
 
 	if not patient.has_method("has_visible_anomaly"):
@@ -64,7 +60,6 @@ func _is_correct(decision: String, patient: Node) -> bool:
 
 	var has_anomaly : bool = patient.has_visible_anomaly()
 	
-	# Exact string matching for buttons: "Something Wrong" / "All Normal"
 	if decision == "Something Wrong":
 		return has_anomaly
 	if decision == "All Normal":
@@ -74,10 +69,8 @@ func _is_correct(decision: String, patient: Node) -> bool:
 
 
 func _derive_state(error_rate: float) -> String:
-	if error_rate >= fail_threshold:
-		return "failed"
-	elif error_rate >= suspicious_threshold:
-		return "suspicious"
+	if error_rate >= fail_threshold: return "failed"
+	if error_rate > 0.0: return "unstable"
 	return "stable"
 
 
