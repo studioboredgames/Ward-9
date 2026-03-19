@@ -25,7 +25,7 @@ func handle_phase_shift(phase_name: String) -> void:
 # ─── Public API ───────────────────────────────────────────────────────────────
 
 ## Called by game_manager router. Receives the learned Behavior Profile.
-func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
+func prepare_cycle(_cycle_id: int, profile: Dictionary) -> void:
 	_clear_all()
 	
 	if patients.is_empty(): return

@@ -67,7 +67,6 @@ func _connect_signals() -> void:
 		evaluation_manager.behavior_profile_updated.connect(_on_profile_updated)
 	
 	# 5. External listeners (Anomaly, Event) connect to this router
-	self.cycle_started.connect(anomaly_manager.prepare_cycle_with_profile) # Updated API
 	self.cycle_ended.connect(anomaly_manager.cleanup_cycle)
 	self.phase_changed.connect(anomaly_manager.handle_phase_shift)
 	self.phase_changed.connect(event_manager.handle_phase_shift)
