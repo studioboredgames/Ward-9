@@ -84,8 +84,15 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 	var entropy = profile.get("focus_entropy", 0.0)
 	var fake_chance = clamp((entropy - 0.7) * 0.8, 0.0, 0.4) + fake_boost
 	
-	if randf() < fake_chance:
+	if not force_real and randf() < fake_chance:
 		_apply_fake_effect()
+		return
+
+	# 🧠 Confidence Collapse Trigger: Punish Hesitation
+	var avg_time = profile.get("avg_decision_time", 5.0)
+	if avg_time > 5.0:
+		print("[AnomalyManager] Hesitation detected. Triggering Confidence Collapse.")
+		_apply_fake_effect() # Punish waiting with a trick
 		return
 
 	# 🧠 Late-Cycle Injection: Delay anomaly to create pressure
@@ -93,11 +100,14 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 	if phase_manager:
 		var time_remaining = phase_manager.get_time_remaining()
 		# If early in cycle (more than 5s left), 40% chance to skip/delay
-		if time_remaining > 5.0 and randf() < 0.4:
+		# force_real bypasses the delay
+		if not force_real and time_remaining > 5.0 and randf() < 0.4:
 			print("[AnomalyManager] Delaying anomaly injection for tension.")
 			return 
 
 	if target and target.has_method("apply_anomaly"):
+		if _anomaly_fired_this_cycle: return
+		_anomaly_fired_this_cycle = true
 		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name, " (Intensity: ", detail_multiplier, ")")
 		target.apply_anomaly(anomaly_type, detail_multiplier)
 
@@ -213,6 +223,9 @@ func _clear_all() -> void:
 
 
 func _apply_fake_effect() -> void:
+	if _anomaly_fired_this_cycle: return
+	_anomaly_fired_this_cycle = true
+	
 	if patients.is_empty(): return
 	var p = patients.pick_random()
 	if p.has_method("apply_anomaly"):
