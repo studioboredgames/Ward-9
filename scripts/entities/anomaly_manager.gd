@@ -7,7 +7,7 @@ const ANOMALIES: Array[String] = ["tilt", "breath", "shift"]
 var patients: Array[Node] = []
 var _current_phase: String = "shift_start"
 var _last_cycle_processed: int = -1
-var _cycle_active: bool = false # Execution lock
+var _anomaly_fired_this_cycle: bool = false # HARD execution guard
 
 var _last_target: Node = null
 var _target_cooldown: Dictionary = {} # Node -> float penalty
@@ -31,13 +31,11 @@ func handle_phase_shift(phase_name: String) -> void:
 
 ## Called by game_manager router. Receives the learned Behavior Profile.
 func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
-	if _cycle_active: return
 	if cycle_id == _last_cycle_processed: return
-	
-	_cycle_active = true
 	_last_cycle_processed = cycle_id
 	
 	_clear_all()
+	_anomaly_fired_this_cycle = false # Reset at start of new attempt
 	_decay_cooldowns()
 	
 	if patients.is_empty(): return
@@ -46,10 +44,20 @@ func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
 
 
 func _run_adaptive_cycle(profile: Dictionary) -> void:
+	if _anomaly_fired_this_cycle: return
+	
+	# 🧠 Problem 2: Punish Passivity (Normal Bias)
+	var bias = profile.get("bias", {"normal_bias": 0.5})
+	var force_real = false
+	if bias.get("normal_bias", 0.0) > 0.8:
+		force_real = true
+		print("[AnomalyManager] Passivity detected. Forcing real anomaly.")
+
 	# 🧠 Memory Violation Trigger (15% chance)
-	if randf() < 0.15:
+	if not force_real and randf() < 0.15:
 		var p = patients.pick_random()
 		if p.has_method("restore_previous_state"):
+			_anomaly_fired_this_cycle = true
 			p.restore_previous_state()
 			return
 
@@ -95,7 +103,7 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 
 
 func cleanup_cycle(_id: int) -> void:
-	_cycle_active = false
+	_anomaly_fired_this_cycle = false
 
 # ─── Adaptive Selection ───────────────────────────────────────────────────────
 
@@ -166,10 +174,17 @@ func _select_adaptive_anomaly(profile: Dictionary) -> String:
 # ─── Clinical Betrayal (Reactive Changes) ────────────────────────────────────
 
 func _on_focus_ended(patient: Node, duration: float) -> void:
-	# 🧠 Focus Betrayal: Prolonged staring triggers micro-changes
-	if duration > 2.5 and randf() < 0.5:
-		print("[AnomalyManager] Focus Betrayal triggered on ", patient.name)
-		_trigger_micro_change(patient)
+	if _anomaly_fired_this_cycle: return
+	
+	# 🧠 Problem 3: Focus Betrayal Upgrade (Reality Instability)
+	if duration > 3.0:
+		_anomaly_fired_this_cycle = true
+		if randf() < 0.5:
+			print("[AnomalyManager] Focus Betrayal (Strong): Memory Violation on ", patient.name)
+			patient.restore_previous_state()
+		else:
+			print("[AnomalyManager] Focus Betrayal (Weak): Micro-change on ", patient.name)
+			_trigger_micro_change(patient)
 
 
 func _trigger_micro_change(patient: Node) -> void:
