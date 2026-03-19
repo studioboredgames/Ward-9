@@ -1,10 +1,9 @@
 extends Node
 ## game_manager.gd
 ## Responsibility: Central signal router (Mediator).
-## Strictly fans out signals from sources to listeners.
-## Manages focused-state propagation for psychological jitter.
+## Implements: Adaptation Delay (previous-profile caching).
 
-# ─── Signals (Fan-Out Hub) ────────────────────────────────────────────────────
+# ─── Signals ──────────────────────────────────────────────────────────────────
 
 signal cycle_started(id: int)
 signal cycle_ended(id: int)
@@ -13,13 +12,11 @@ signal decision_received(decision: String, patient: Node)
 signal patient_focused(patient: Node)
 signal evaluation_updated(state: String, id: int)
 
-# ─── Configuration ────────────────────────────────────────────────────────────
+# ─── Transit Memory (Psychological State) ─────────────────────────────────────
 
-@export var debug_logs: bool = true
+var behavior_profile: Dictionary = {}
+var previous_profile: Dictionary = {} # Implements Adaptation Delay
 
-# ─── Transit Memory ───────────────────────────────────────────────────────────
-
-var last_decision: String = ""
 var last_cycle_id: int = 0
 var _current_patient: Node = null
 var _decision_locked: bool = false
@@ -40,15 +37,6 @@ var _decision_locked: bool = false
 func _ready() -> void:
 	add_to_group("game_manager")
 	_connect_signals()
-	_verify_systems()
-
-
-func _verify_systems() -> void:
-	if not interaction_system: push_error("game_manager: interaction_system not found")
-	if not decision_ui: push_error("game_manager: decision_ui not found")
-	if not evaluation_manager: push_error("game_manager: evaluation_manager not found")
-	if not anomaly_manager: push_error("game_manager: anomaly_manager not found")
-	if not event_manager: push_error("game_manager: event_manager not found")
 
 
 func _connect_signals() -> void:
@@ -66,16 +54,20 @@ func _connect_signals() -> void:
 		interaction_system.decision_window_opened.connect(_on_input_patient_focused)
 		interaction_system.decision_window_closed.connect(_on_input_patient_unfocused)
 		
-		# Systems react to the router signals
+		# Pro-Focus Signals: Forwarded to Evaluation
+		interaction_system.patient_focus_entered.connect(_on_input_focus_entered)
+		interaction_system.patient_focus_exited.connect(_on_input_focus_exited)
+		
 		self.cycle_started.connect(interaction_system.enable_interaction)
 		self.cycle_ended.connect(interaction_system.disable_interaction)
 	
-	# 4. From evaluation_manager (Judgement)
+	# 4. From evaluation_manager (Profiling)
 	if evaluation_manager:
 		evaluation_manager.evaluation_updated.connect(_on_judgement_updated)
+		evaluation_manager.behavior_profile_updated.connect(_on_profile_updated)
 	
 	# 5. External listeners (Anomaly, Event) connect to this router
-	self.cycle_started.connect(anomaly_manager.prepare_cycle)
+	self.cycle_started.connect(anomaly_manager.prepare_cycle_with_profile) # Updated API
 	self.cycle_ended.connect(anomaly_manager.cleanup_cycle)
 	self.phase_changed.connect(anomaly_manager.handle_phase_shift)
 	self.phase_changed.connect(event_manager.handle_phase_shift)
@@ -84,19 +76,39 @@ func _connect_signals() -> void:
 
 	self.decision_received.connect(phase_manager._on_decision_received)
 
-# ─── Signal Routing (Fan-In -> Fan-Out) ───────────────────────────────────────
+# ─── Behavior Profiling Routing ───────────────────────────────────────────────
+
+func _on_profile_updated(profile: Dictionary) -> void:
+	# Implements Lerped Adaptation Delay: Never react to the same cycle context
+	previous_profile = behavior_profile
+	behavior_profile = profile
+
+
+func _on_input_focus_entered(patient: Node) -> void:
+	if evaluation_manager: evaluation_manager.on_focus_started(patient)
+	if patient.has_method("set"): patient.set("is_player_focusing", true)
+
+
+func _on_input_focus_exited(patient: Node) -> void:
+	if evaluation_manager: evaluation_manager.on_focus_ended(patient)
+	if patient.has_method("set"): patient.set("is_player_focusing", false)
+
+# ─── Core Signal Routing ──────────────────────────────────────────────────────
 
 func _on_authority_cycle_started(id: int) -> void:
 	last_cycle_id = id
 	_decision_locked = false
 	_current_patient = null
 	
-	# Hardening: Tell evaluation to start its hesitation timer
-	if evaluation_manager:
-		evaluation_manager.reset_cycle_timer()
+	if evaluation_manager: evaluation_manager.reset_cycle_timer()
 	
-	if debug_logs: print("--- Cycle Started: ", id, " ---")
+	# Fan out: notify listeners with the Profile-of-Record (previous)
+	# This ensures the system acts on a "learned" model, not a reactive one
 	emit_signal("cycle_started", id)
+	
+	# AnomalyManager specific direct call to avoid signal payload limits
+	if anomaly_manager:
+		anomaly_manager.prepare_cycle(id, previous_profile)
 
 
 func _on_authority_cycle_ended(id: int) -> void:
@@ -109,35 +121,25 @@ func _on_authority_phase_changed(phase_name: String) -> void:
 
 func _on_input_patient_focused(patient: Node) -> void:
 	_current_patient = patient
-	if patient.has_method("set"):
-		patient.set("is_player_focusing", true)
-		
 	if decision_ui and patient:
 		decision_ui.display_for_patient(patient)
 	emit_signal("patient_focused", patient)
 
 
 func _on_input_patient_unfocused() -> void:
-	if _current_patient and _current_patient.has_method("set"):
-		_current_patient.set("is_player_focusing", false)
 	_current_patient = null
 
 
 func _on_input_decision_submitted(decision: String) -> void:
 	if _decision_locked: return
 	if _current_patient == null: return
-		
 	_decision_locked = true
-	last_decision = decision
 	
-	# Invariant: Evaluation happens BEFORE fan-out
 	if evaluation_manager:
 		evaluation_manager.log_decision(decision, last_cycle_id, _current_patient)
 	
 	emit_signal("decision_received", decision, _current_patient)
-	
-	if interaction_system:
-		interaction_system.acknowledge_decision()
+	if interaction_system: interaction_system.acknowledge_decision()
 
 
 func _on_judgement_updated(state: String, id: int) -> void:

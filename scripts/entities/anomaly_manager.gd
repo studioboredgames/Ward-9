@@ -1,7 +1,7 @@
 extends Node
 ## anomaly_manager.gd
-## Responsibility: Assign observable anomalies to patients per cycle.
-## Patterns: Adaptive Dead Air and Unreliable Fake Anomalies.
+## Responsibility: Adaptive anomaly spawning using player behavior profiles.
+## Counters player logic by targeting unobserved areas and countering bias.
 
 const ANOMALIES: Array[String] = ["tilt", "breath", "shift"]
 var patients: Array[Node] = []
@@ -16,8 +16,7 @@ func _ready() -> void:
 
 func _collect_patients() -> void:
 	var nodes = get_tree().get_nodes_in_group("patient")
-	for n in nodes:
-		patients.append(n)
+	for n in nodes: patients.append(n)
 
 
 func handle_phase_shift(phase_name: String) -> void:
@@ -25,72 +24,77 @@ func handle_phase_shift(phase_name: String) -> void:
 
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-func prepare_cycle(_cycle_id: int) -> void:
-	_clear_all() # Cleanup previous real ones
+## Called by game_manager router. Receives the learned Behavior Profile.
+func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
+	_clear_all()
 	
 	if patients.is_empty(): return
-
-	# 1. Dead Air Scaling (Probability of NO anomaly)
-	var dead_air_chance = 0.10
-	match _current_phase:
-		"midnight": dead_air_chance = 0.25
-		"pre_dawn": dead_air_chance = 0.40
-	
-	if randf() < dead_air_chance:
-		print("Anomaly Manager: Dead Air. No real anomalies spawned.")
-		# Still a chance for "Fake" ones here to induce paranoia
-		if randf() < 0.3: _apply_fake_effect()
+	if profile.is_empty(): 
+		# Fallback for first cycle
+		_spawn_single()
 		return
 
-	# 2. Fake Anomaly Check (20% chance)
-	if randf() < 0.20:
-		_apply_fake_effect()
+	# Adaptation Logic Layer
+	var target = _select_adaptive_target(profile)
+	var anomaly_type = _select_adaptive_anomaly(profile)
 
-	# 3. Real Spawn Distribution
-	# Earlier cycles = single, later = chance for double
-	if _current_phase == "shift_start" or randf() < 0.7:
-		_spawn_single()
-	else:
-		_spawn_double()
+	# Anti-Habit Delay: If player is rushing, delay the visual onset
+	if profile.get("avg_decision_time", 5.0) < 1.0:
+		await get_tree().create_timer(1.0).timeout
+
+	if target and target.has_method("apply_anomaly"):
+		target.apply_anomaly(anomaly_type)
 
 
-func cleanup_cycle(_cycle_id: int) -> void:
+func cleanup_cycle(_id: int) -> void:
 	pass
 
+# ─── Adaptive Selection ───────────────────────────────────────────────────────
 
-# ─── Spawning Helpers ─────────────────────────────────────────────────────────
-
-func _spawn_single() -> void:
-	var p = patients.pick_random()
-	p.apply_anomaly(ANOMALIES.pick_random())
-
-
-func _spawn_double() -> void:
-	var shuffled = patients.duplicate()
-	shuffled.shuffle()
-	for i in range(min(2, shuffled.size())):
-		shuffled[i].apply_anomaly(ANOMALIES.pick_random())
-
-
-func _apply_fake_effect() -> void:
-	var p = patients.pick_random()
-	if not p: return
+func _select_adaptive_target(profile: Dictionary) -> Node:
+	var focus_times: Dictionary = profile.get("focus_time", {})
+	var weights := {}
 	
-	# Fake: brief visual shift that DOES NOT fully reset
-	print("Anomaly Manager: Triggering Fake Anomaly on ", p.name)
-	
-	var tilt = randf_range(3.0, 6.0)
-	p.mesh.rotation_degrees.z += tilt
-	
-	# Delay then PARTIAL reset
-	await get_tree().create_timer(randf_range(0.4, 0.8)).timeout
-	
-	# Only revert 70% of the movement (leave doubt)
-	p.mesh.rotation_degrees.z -= (tilt * 0.7)
+	# Weighted Strategy: Focus Punishment
+	# Less focus time -> higher spawn probability
+	var total_weight = 0.0
+	for p in patients:
+		var time = focus_times.get(p, 0.0)
+		# 1 / max(focus_time, 0.01) creates an inverse weight
+		var weight = 1.0 / max(time, 0.01)
+		# Reward entropy: if entropy is low (obsessive scanning), increase weights disproportionately
+		if profile.get("focus_entropy", 1.0) < 0.5:
+			weight *= 2.0
+		
+		weights[p] = weight
+		total_weight += weight
 
+	# Weighted Random Pick
+	var roll = randf() * total_weight
+	var cursor = 0.0
+	for p in weights:
+		cursor += weights[p]
+		if roll <= cursor:
+			return p
+	
+	return patients.pick_random()
+
+
+func _select_adaptive_anomaly(profile: Dictionary) -> String:
+	var bias = profile.get("bias", {"normal_bias": 0.5})
+	
+	# Bias Counter: if player over-calls "All Normal", favor more subtle anomalies
+	# to force them into careful inspection.
+	if bias.get("normal_bias", 0.5) > 0.7:
+		return ANOMALIES.pick_random() # In later builds, could return "subtle_tilt" etc.
+	
+	return ANOMALIES.pick_random()
+
+
+# ─── Internal ─────────────────────────────────────────────────────────────────
 
 func _clear_all() -> void:
 	for p in patients:
-		# Real ones get a clean reset normally, but we can make it unreliable late game
-		var unreliable = (_current_phase == "pre_dawn") and (randf() < 0.3)
-		p.clear_anomaly(unreliable)
+		# Unreliable reset late game
+		var unreliable = (_current_phase == "pre_dawn") and (randf() < 0.25)
+		if p.has_method("clear_anomaly"): p.clear_anomaly(unreliable)
