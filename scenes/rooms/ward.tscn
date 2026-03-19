@@ -237,3 +237,25 @@ material = SubResource("StandardMaterial3D_walls")
 [node name="Door_Staff" type="CSGBox3D" parent="StaffRoom/Staff_Wall_N"]
 operation = 2
 size = Vector3(1.2, 2.2, 0.2)
+
+[node name="Desk" type="CSGBox3D" parent="StaffRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 1)
+size = Vector3(1.5, 0.8, 0.6)
+material = SubResource("StandardMaterial3D_pt")
+
+[node name="StaffLight" type="OmniLight3D" parent="StaffRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(0.8, 0.9, 1, 1)
+script = ExtResource("3_fl")
+
+# ─── Hallway Detailing ───
+
+[node name="HallLight_1" type="OmniLight3D" parent="Hallway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -2)
+light_color = Color(0.8, 0.9, 1, 1)
+script = ExtResource("3_fl")
+
+[node name="HallLight_2" type="OmniLight3D" parent="Hallway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 3)
+light_color = Color(0.8, 0.9, 1, 1)
+script = ExtResource("3_fl")
