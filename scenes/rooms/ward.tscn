@@ -12,14 +12,33 @@ height = 1.8
 radius = 0.4
 height = 1.8
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pt"]
-albedo_color = Color(0.8, 0.8, 0.9, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
+albedo_color = Color(0.7, 0.72, 0.75, 1)
+metallic = 0.2
+roughness = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_walls"]
+albedo_color = Color(0.9, 0.92, 0.95, 1)
+metallic = 0.1
+roughness = 0.8
+uv1_scale = Vector3(10, 10, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_monitor"]
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission = Color(0, 1, 0, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_curtain"]
+albedo_color = Color(0.85, 0.87, 0.9, 0.8)
+transparency = 1
 
 [node name="Ward" type="Node3D"]
 
 [node name="Floor" type="CSGBox3D" parent="."]
 use_collision = true
 size = Vector3(12, 0.1, 10)
+material = SubResource("StandardMaterial3D_floor")
 
 [node name="Ceiling" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
@@ -30,21 +49,30 @@ size = Vector3(12, 0.1, 10)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
 use_collision = true
 size = Vector3(12, 3, 0.1)
+material = SubResource("StandardMaterial3D_walls")
 
 [node name="Wall_South" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
 use_collision = true
 size = Vector3(12, 3, 0.1)
+material = SubResource("StandardMaterial3D_walls")
+
+[node name="Door_Hallway" type="CSGBox3D" parent="Wall_South"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 0)
+operation = 2
+size = Vector3(1.5, 2.2, 0.2)
 
 [node name="Wall_West" type="CSGBox3D" parent="."]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6, 1.5, 0)
 use_collision = true
 size = Vector3(10, 3, 0.1)
+material = SubResource("StandardMaterial3D_walls")
 
 [node name="Wall_East" type="CSGBox3D" parent="."]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 6, 1.5, 0)
 use_collision = true
 size = Vector3(10, 3, 0.1)
+material = SubResource("StandardMaterial3D_walls")
 
 [node name="PatientUnit_A" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -3)
@@ -127,5 +155,45 @@ max_db = 0.0
 
 [node name="BedLight" type="OmniLight3D" parent="PatientUnit_C" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-light_color = Color(1, 0.95, 0.8, 1)
+light_color = Color(0.8, 0.9, 1, 1)
 script = ExtResource("3_fl")
+
+# ─── New Spatial Layout ───
+
+[node name="Hallway" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
+
+[node name="Hall_Floor" type="CSGBox3D" parent="Hallway"]
+use_collision = true
+size = Vector3(3, 0.1, 10)
+material = SubResource("StandardMaterial3D_floor")
+
+[node name="Hall_Wall_L" type="CSGBox3D" parent="Hallway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.5, 0)
+use_collision = true
+size = Vector3(0.1, 3, 10)
+material = SubResource("StandardMaterial3D_walls")
+
+[node name="Hall_Wall_R" type="CSGBox3D" parent="Hallway"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.5, 0)
+use_collision = true
+size = Vector3(0.1, 3, 10)
+material = SubResource("StandardMaterial3D_walls")
+
+[node name="StaffRoom" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 17)
+
+[node name="Staff_Floor" type="CSGBox3D" parent="StaffRoom"]
+use_collision = true
+size = Vector3(4, 0.1, 4)
+material = SubResource("StandardMaterial3D_floor")
+
+[node name="Staff_Wall_N" type="CSGBox3D" parent="StaffRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -2)
+use_collision = true
+size = Vector3(4, 3, 0.1)
+material = SubResource("StandardMaterial3D_walls")
+
+[node name="Door_Staff" type="CSGBox3D" parent="StaffRoom/Staff_Wall_N"]
+operation = 2
+size = Vector3(1.2, 2.2, 0.2)
