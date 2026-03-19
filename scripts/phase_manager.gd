@@ -19,6 +19,7 @@ const CYCLE_TIMEOUT: float = 30.0 ## Seconds before auto-completing cycle
 
 var current_phase_index: int = 0
 var current_cycle_id: int = 0
+var _cycle_completed: bool = false
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
