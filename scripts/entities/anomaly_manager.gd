@@ -39,6 +39,11 @@ func cleanup_cycle(_cycle_id: int) -> void:
 	pass
 
 
+func handle_phase_shift(_phase_name: String) -> void:
+	# Hook for future scaling
+	pass
+
+
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
 func _clear_all() -> void:
