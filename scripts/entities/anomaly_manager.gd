@@ -90,9 +90,8 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 			return 
 
 	if target and target.has_method("apply_anomaly"):
-		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name)
-		# Future: pass detail_multiplier to apply_anomaly for scaling
-		target.apply_anomaly(anomaly_type)
+		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name, " (Intensity: ", detail_multiplier, ")")
+		target.apply_anomaly(anomaly_type, detail_multiplier)
 
 
 func cleanup_cycle(_id: int) -> void:

@@ -42,7 +42,7 @@ func _process(delta: float) -> void:
 
 # ─── Anomaly Control ──────────────────────────────────────────────────────────
 
-func apply_anomaly(type: String) -> void:
+func apply_anomaly(type: String, intensity_mult: float = 1.0) -> void:
 	clear_anomaly() # Fresh start
 	
 	is_anomalous = true
@@ -53,13 +53,13 @@ func apply_anomaly(type: String) -> void:
 	# Tuning: Horror Heuristics (Subtle doubt)
 	match type:
 		"tilt":
-			# Correct: 8-12 degrees
-			mesh.rotation_degrees.z = _base_rotation.z + randf_range(8.0, 12.0)
+			# Correct: 8-12 degrees, scaled by intensity
+			mesh.rotation_degrees.z = _base_rotation.z + (randf_range(8.0, 12.0) * intensity_mult)
 		"breath":
-			_start_breathing()
+			_start_breathing(intensity_mult)
 		"shift":
-			# Correct: 0.04 - 0.12 units
-			mesh.position.x = _base_position.x + randf_range(0.04, 0.12)
+			# Correct: 0.04 - 0.12 units, scaled by intensity
+			mesh.position.x = _base_position.x + (randf_range(0.04, 0.12) * intensity_mult)
 	
 	_record_state()
 
@@ -111,13 +111,13 @@ func _apply_micro_jitter() -> void:
 	tween.tween_property(mesh, "position:x", mesh.position.x, 0.1)
 
 
-func _start_breathing() -> void:
+func _start_breathing(intensity_mult: float = 1.0) -> void:
 	if not mesh: return
 	if _breath_tween: _breath_tween.kill()
 		
 	_breath_tween = create_tween().set_loops().set_trans(Tween.TRANS_SINE)
-	# Tuning: 1.02-1.04 (Almost imperceptible)
-	var breath_intensity = randf_range(1.02, 1.04)
+	# Tuning: 1.02-1.04 (Almost imperceptible), scaled by intensity
+	var breath_intensity = 1.0 + ((randf_range(1.02, 1.04) - 1.0) * intensity_mult)
 	var breath_speed = randf_range(1.4, 2.0)
 	
 	_breath_tween.tween_property(mesh, "scale", _base_scale * breath_intensity, breath_speed)
