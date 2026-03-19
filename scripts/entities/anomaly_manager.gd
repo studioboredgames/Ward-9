@@ -25,7 +25,7 @@ func handle_phase_shift(phase_name: String) -> void:
 
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-func prepare_cycle(cycle_id: int) -> void:
+func prepare_cycle(_cycle_id: int) -> void:
 	_clear_all() # Cleanup previous real ones
 	
 	if patients.is_empty(): return

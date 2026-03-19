@@ -20,7 +20,6 @@ const CYCLE_TIMES: Array[float] = [18.0, 13.0, 9.0]
 var current_phase_index: int = 0
 var current_cycle_id: int = 0
 var _cycle_completed: bool = false
-var _cycle_timer_active: bool = false
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 

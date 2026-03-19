@@ -7,6 +7,7 @@ extends Node
 # ─── Signals ──────────────────────────────────────────────────────────────────
 
 signal decision_window_opened(patient: Node)
+signal decision_window_closed
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -75,6 +76,7 @@ func disable_interaction(_id: int = 0) -> void:
 func acknowledge_decision() -> void:
 	decision_window_active = false
 	_reset_dwell()
+	emit_signal("decision_window_closed")
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
