@@ -112,6 +112,10 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name, " (Intensity: ", detail_multiplier, ")")
 		target.apply_anomaly(anomaly_type, detail_multiplier)
 		emit_signal("anomaly_spawned", target, anomaly_type)
+		
+		# Record for Paranoia Analysis
+		var analyzer = get_tree().get_first_node_in_group("behavior_analyzer")
+		if analyzer: analyzer.record_focus(target)
 
 
 func cleanup_cycle(_id: int) -> void:
@@ -131,6 +135,14 @@ func _select_adaptive_target(profile: Dictionary) -> Node:
 		# Reduce weight by penalty percentage
 		filtered[p] = weights[p] * (1.0 - penalty)
 		total_weight += filtered[p]
+
+	# Paranoia Logic (Phase 6): target least observed if entropy is low
+	var analyzer = get_tree().get_first_node_in_group("behavior_analyzer")
+	if analyzer and profile.get("focus_entropy", 1.0) < 0.6:
+		var least = analyzer.get_least_observed(patients)
+		if least:
+			_apply_target_cooldown(least)
+			return least
 
 	# Weighted Random Pick
 	var roll = randf() * total_weight

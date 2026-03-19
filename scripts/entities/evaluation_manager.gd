@@ -75,6 +75,11 @@ func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
 	if decision == "Something Wrong": anomaly_guesses += 1
 	else: normal_guesses += 1
 
+	# Truth Instability (Phase 7): Invert correctness
+	var instability = get_tree().get_first_node_in_group("truth_instability")
+	if instability:
+		correct = instability.evaluate(correct)
+
 	emit_signal("decision_resolved", correct)
 	
 	var profile = _build_profile()

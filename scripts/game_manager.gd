@@ -28,8 +28,11 @@ var _decision_locked: bool = false
 @onready var phase_manager: Node = $PhaseManager
 @onready var anomaly_manager: Node = $AnomalyManager
 @onready var evaluation_manager: Node = $EvaluationManager
-@onready var hallucination_manager: Node = get_node_or_null("HallucinationManager")
 @onready var event_manager: Node = $EventManager
+
+# Centralized Psychological Authority (Phase 5-10 Refactor)
+@onready var director: Node = get_tree().get_first_node_in_group("psychological_director")
+@onready var hallucination_manager: Node = get_tree().get_first_node_in_group("hallucination_manager")
 
 # These lookup group-assigned nodes at runtime
 @onready var interaction_system: Node = get_tree().get_first_node_in_group("interaction_system")
@@ -80,9 +83,9 @@ func _connect_signals() -> void:
 	
 	self.focus_ended.connect(anomaly_manager._on_focus_ended)
 
-	# 6. Hallucination Memory
-	if anomaly_manager and hallucination_manager:
-		anomaly_manager.anomaly_spawned.connect(hallucination_manager.register_real_anomaly)
+	# 6. Global Psychological Routing
+	if director:
+		director.distortion_requested.connect(_on_distortion_requested)
 
 	self.decision_received.connect(phase_manager._on_decision_received)
 
@@ -93,10 +96,8 @@ func _on_profile_updated(profile: Dictionary) -> void:
 	previous_profile = behavior_profile
 	behavior_profile = profile
 	
-	# Maintain 3-cycle history for Perception Corruption
-	profile_history.append(profile.duplicate())
-	if profile_history.size() > 3:
-		profile_history.pop_front()
+	if director:
+		director.update_profile(profile)
 
 
 func _on_input_focus_entered(patient: Node) -> void:
@@ -185,3 +186,8 @@ func _on_input_decision_submitted(decision: String) -> void:
 func _on_judgement_updated(state: String, id: int) -> void:
 	if id != last_cycle_id: return
 	emit_signal("evaluation_updated", state, id)
+
+
+func _on_distortion_requested(type: String, payload: Dictionary) -> void:
+	if hallucination_manager:
+		hallucination_manager.trigger(type, payload)
