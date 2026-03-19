@@ -43,6 +43,20 @@ var _decision_locked: bool = false
 func _ready() -> void:
 	add_to_group("game_manager")
 	_connect_signals()
+	
+	# Game starts in MENU state
+	var menu = get_tree().get_first_node_in_group("main_menu")
+	if menu:
+		menu.play_pressed.connect(_on_play_pressed)
+
+
+func _on_play_pressed() -> void:
+	if phase_manager:
+		phase_manager.start_game()
+	
+	var sm = get_tree().get_first_node_in_group("subtitle_manager")
+	if sm:
+		sm.display_text("Shift starting. Monitor the patients.", 4.0)
 
 
 func _connect_signals() -> void:
@@ -139,6 +153,15 @@ func _on_authority_cycle_ended(id: int) -> void:
 
 func _on_authority_phase_changed(phase_name: String) -> void:
 	emit_signal("phase_changed", phase_name)
+	
+	var sm = get_tree().get_first_node_in_group("subtitle_manager")
+	if sm:
+		match phase_name:
+			"normal": sm.display_text("All quiet. Stay alert.", 3.0)
+			"doubt": sm.display_text("Something feels... different.", 3.0)
+			"distortion": sm.display_text("Did that move?", 3.0)
+			"judgment": sm.display_text("They are watching back.", 3.0)
+			"reveal": sm.display_text("I understand now.", 4.0)
 
 
 func _on_input_patient_focused(patient: Node) -> void:
