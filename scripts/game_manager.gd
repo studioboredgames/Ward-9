@@ -9,7 +9,7 @@ extends Node
 signal cycle_started(id: int)
 signal cycle_ended(id: int)
 signal phase_changed(name: String)
-signal decision_received(decision: String)
+signal decision_received(decision: String, patient: Node)
 signal patient_focused(patient: Node)
 signal evaluation_updated(state: String, id: int)
 
@@ -17,6 +17,8 @@ signal evaluation_updated(state: String, id: int)
 
 var last_decision: String = ""
 var last_cycle_id: int = 0
+var _current_patient: Node = null
+var _decision_locked: bool = false
 
 # ─── Node References ──────────────────────────────────────────────────────────
 
@@ -78,6 +80,10 @@ func _connect_signals() -> void:
 
 func _on_authority_cycle_started(id: int) -> void:
 	last_cycle_id = id
+	_decision_locked = false
+	_current_patient = null
+	
+	print("--- Cycle Started: ", id, " ---")
 	emit_signal("cycle_started", id)
 
 
@@ -90,24 +96,27 @@ func _on_authority_phase_changed(name: String) -> void:
 
 
 func _on_input_patient_focused(patient: Node) -> void:
+	_current_patient = patient
 	if decision_ui and patient:
 		decision_ui.display_for_patient(patient)
 	emit_signal("patient_focused", patient)
 
 
 func _on_input_decision_submitted(decision: String) -> void:
+	# Race Condition Fix: Lock decisions once submitted
+	if _decision_locked:
+		return
+	_decision_locked = true
+	
 	last_decision = decision
+	print("Cycle:", last_cycle_id, " Decision:", decision, " Target:", _current_patient.name if _current_patient else "None")
 	
-	# UI Lifecycle Fix: Explicitly close the UI
-	if decision_ui:
-		decision_ui.hide()
-	
-	# Timing Fix: Log/Evaluate IMMEDIATELY upon decision receipt
+	# Timing Fix: Log/Evaluate IMMEDIATELY with patient context
 	if evaluation_manager:
-		evaluation_manager.log_decision(decision, last_cycle_id)
+		evaluation_manager.log_decision(decision, last_cycle_id, _current_patient)
 	
 	# Router notifies authorities and listeners
-	emit_signal("decision_received", decision)
+	emit_signal("decision_received", decision, _current_patient)
 	
 	# Optional: feedback to interaction system
 	if interaction_system:

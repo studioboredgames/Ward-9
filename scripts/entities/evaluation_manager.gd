@@ -31,11 +31,10 @@ func _ready() -> void:
 
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-## Called by game_manager after cycle_end + delay.
-func log_decision(decision: String, cycle_id: int) -> void:
-	# Cross-reference decision with actual anomaly state (via anomaly_manager if needed,
-	# or via the reported patient's state)
-	var is_correct = _verify_correctness(decision)
+## Called by game_manager after cycle_end + delay (now context-rich).
+func log_decision(decision: String, cycle_id: int, patient: Node = null) -> void:
+	# Cross-reference decision with actual anomaly state
+	var is_correct = _verify_correctness(decision, patient)
 	
 	var entries = {
 		"cycle_id": cycle_id,
@@ -63,19 +62,25 @@ func get_state_string() -> String:
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
-func _verify_correctness(decision: String) -> bool:
-	# Business logic: find out if ANY patient had an anomaly
+func _verify_correctness(decision: String, target_patient: Node) -> bool:
+	# Check for ANY anomaly in the ward
 	var patients = get_tree().get_nodes_in_group("patient")
-	var has_any_anomaly = false
+	var ward_anomalous = false
 	for p in patients:
 		if p.is_anomalous():
-			has_any_anomaly = true
+			ward_anomalous = true
 			break
 	
-	if decision == "something_wrong" and has_any_anomaly:
-		return true
-	if decision == "all_normal" and not has_any_anomaly:
-		return true
+	# Logic:
+	# "All Normal" is ONLY correct if ZERO patients are anomalous.
+	if decision == "all_normal":
+		return not ward_anomalous
+		
+	# "Something Wrong" is correct if ANYONE is anomalous,
+	# but we can optionally check if the player was focused on THE anomaly.
+	if decision == "something_wrong":
+		# For harder evaluation: check if target_patient == anomaly
+		return ward_anomalous
 		
 	return false
 

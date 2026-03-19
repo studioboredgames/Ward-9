@@ -11,8 +11,8 @@ signal phase_changed_notify(name: String)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-const CYCLES_PER_PHASE: int = 3
 const PHASES: Array[String] = ["shift_start", "midnight", "pre_dawn"]
+const CYCLE_TIMEOUT: float = 30.0 ## Seconds before auto-completing cycle
 
 # ─── Public State (Authority) ─────────────────────────────────────────────────
 
@@ -48,10 +48,21 @@ func _start_game() -> void:
 
 func _start_next_cycle() -> void:
 	current_cycle_id += 1
+	_start_cycle_timeout(current_cycle_id)
 	emit_signal("cycle_started_notify", current_cycle_id)
 
 
-func _on_decision_received(_decision: String) -> void:
+func _start_cycle_timeout(cycle_id: int) -> void:
+	# Failure Path Fix: Prevent soft locks if player doesn't decide
+	await get_tree().create_timer(CYCLE_TIMEOUT).timeout
+	
+	# Validity Check: Only complete if this specific cycle is still active
+	if cycle_id == current_cycle_id:
+		print("Phase Authority: Cycle timeout reached. Auto-completing.")
+		_complete_current_cycle()
+
+
+func _on_decision_received(_decision: String, _patient: Node = null) -> void:
 	# Design: Brief cooldown BEFORE processing completion
 	# Gives event_manager time to react to the decision itself (tension)
 	await get_tree().create_timer(0.3).timeout
