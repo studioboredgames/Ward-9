@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://main"]
+[gd_scene load_steps=11 format=3 uid="uid://main"]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
@@ -9,6 +9,10 @@
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="7_pc"]
 [ext_resource type="Script" path="res://scripts/player/interaction_system.gd" id="8_is"]
 [ext_resource type="PackedScene" uid="uid://ward" path="res://scenes/rooms/ward.tscn" id="9_wd"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pl"]
+radius = 0.4
+height = 1.8
 
 [node name="Main" type="Node"]
 script = ExtResource("1_gm")
@@ -66,6 +70,10 @@ text = "All Normal"
 [node name="Player" type="CharacterBody3D" parent="World" groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
 script = ExtResource("7_pc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_pl")
 
 [node name="Camera3D" type="Camera3D" parent="World/Player" groups=["player_camera"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
