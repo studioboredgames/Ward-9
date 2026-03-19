@@ -32,7 +32,17 @@ var last_cycle_id: int = 0
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	add_to_group("game_manager")
 	_connect_signals()
+	_verify_systems()
+
+
+func _verify_systems() -> void:
+	if not interaction_system: push_error("game_manager: interaction_system not found")
+	if not decision_ui: push_error("game_manager: decision_ui not found")
+	if not evaluation_manager: push_error("game_manager: evaluation_manager not found")
+	if not anomaly_manager: push_error("game_manager: anomaly_manager not found")
+	if not event_manager: push_error("game_manager: event_manager not found")
 
 
 func _connect_signals() -> void:
@@ -88,6 +98,10 @@ func _on_input_patient_focused(patient: Node) -> void:
 func _on_input_decision_submitted(decision: String) -> void:
 	last_decision = decision
 	
+	# UI Lifecycle Fix: Explicitly close the UI
+	if decision_ui:
+		decision_ui.hide()
+	
 	# Timing Fix: Log/Evaluate IMMEDIATELY upon decision receipt
 	if evaluation_manager:
 		evaluation_manager.log_decision(decision, last_cycle_id)
@@ -101,4 +115,8 @@ func _on_input_decision_submitted(decision: String) -> void:
 
 
 func _on_judgement_updated(state: String, id: int) -> void:
+	# Validation: Ignore stale evaluation results
+	if id != last_cycle_id:
+		return
+		
 	emit_signal("evaluation_updated", state, id)

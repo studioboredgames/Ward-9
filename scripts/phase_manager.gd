@@ -22,12 +22,19 @@ var current_cycle_id: int = 0
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	# Authority connects to the router to receive progress signals
-	var gm = get_parent() # Assuming it's a child of Main/GameManager
-	if gm.has_signal("decision_received"):
-		gm.decision_received.connect(_on_decision_received)
-		
+	# Timing Fix: Defer connection to ensure GameManager exists in group
+	call_deferred("_connect_to_game_manager")
 	call_deferred("_start_game")
+
+
+func _connect_to_game_manager() -> void:
+	# Coupling Fix: Use group lookup instead of get_parent()
+	var gm = get_tree().get_first_node_in_group("game_manager")
+	if gm:
+		if gm.has_signal("decision_received"):
+			gm.decision_received.connect(_on_decision_received)
+	else:
+		push_error("phase_manager: game_manager not found in group")
 
 
 func _start_game() -> void:
@@ -45,6 +52,9 @@ func _start_next_cycle() -> void:
 
 
 func _on_decision_received(_decision: String) -> void:
+	# Design: Brief cooldown BEFORE processing completion
+	# Gives event_manager time to react to the decision itself (tension)
+	await get_tree().create_timer(0.3).timeout
 	_complete_current_cycle()
 
 
