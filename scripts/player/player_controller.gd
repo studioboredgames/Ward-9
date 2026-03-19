@@ -67,7 +67,28 @@ func set_movement_enabled(enabled: bool) -> void:
 		velocity.x = 0.0
 		velocity.z = 0.0
 
-# ─── Internal ─────────────────────────────────────────────────────────────────
+
+func trigger_ending_pose() -> void:
+	_movement_enabled = false
+	print("[Player] Transitioning to ENDING POSE")
+	
+	# Perspective Shift: Player has the red wristband
+	# We'll create a simple visual on the camera's viewport
+	var wristband = ColorRect.new()
+	wristband.color = Color.RED
+	wristband.custom_minimum_size = Vector2(100, 20)
+	wristband.position = Vector2(50, 400) # Bottom left-ish
+	wristband.rotation_degrees = 45
+	get_tree().get_first_node_in_group("decision_ui").get_parent().add_child(wristband)
+
+	# Look down at the wristband
+	var tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(camera, "rotation:x", deg_to_rad(-60), 2.0)
+	tween.tween_property(camera, "position:y", 1.0, 2.0) # Laying down
+	
+	# Final Abrupt Statement
+	await get_tree().create_timer(3.0).timeout
+	print("[SYSTEM] ENDING: PATIENT ID #000 - ATTENDANT_01")
 
 func _apply_gravity(delta: float) -> void:
 	if not is_on_floor():
