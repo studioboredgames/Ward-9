@@ -9,11 +9,10 @@ signal phase_changed_notify(phase_name: String)
 # ─── Configuration ────────────────────────────────────────────────────────────
 
 @export var debug_logs: bool = true
-const CYCLES_PER_PHASE: int = 3
-const PHASES: Array[String] = ["shift_start", "midnight", "pre_dawn"]
+const PHASES: Array[String] = ["normal", "doubt", "distortion", "judgment", "reveal"]
 
-# Tension Scaling: Aggressive Curve 18 -> 13 -> 9
-const CYCLE_TIMES: Array[float] = [18.0, 13.0, 9.0]
+# Tension Scaling: Aggressive Curve 18 -> 15 -> 12 -> 9 -> 6
+const CYCLE_TIMES: Array[float] = [18.0, 15.0, 12.0, 9.0, 6.0]
 
 # ─── Public State (Authority) ─────────────────────────────────────────────────
 
@@ -111,4 +110,11 @@ func _advance_phase() -> void:
 		await get_tree().create_timer(2.0).timeout
 		_start_next_cycle()
 	else:
-		print("Phase Authority: Shift completed.")
+		_trigger_final_reveal()
+
+
+func _trigger_final_reveal() -> void:
+	print("Phase Authority: FINAL REVEAL TRIGGERED.")
+	var gm = get_tree().get_first_node_in_group("game_manager")
+	if gm and gm.has_method("trigger_ending"):
+		gm.trigger_ending()

@@ -180,3 +180,25 @@ func _on_judgement_updated(state: String, id: int) -> void:
 func _on_distortion_requested(type: String, payload: Dictionary) -> void:
 	if hallucination_manager:
 		hallucination_manager.trigger(type, payload)
+
+
+func trigger_ending() -> void:
+	_decision_locked = true
+	print("[GameManager] TRIGGERING FINAL REVEAL SEQUENCE")
+	
+	# 1. Final Scare
+	if event_manager:
+		event_manager.trigger_scare(4) # Major Scare
+		await get_tree().create_timer(2.5).timeout
+	
+	# 2. Perspective Shift
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.has_method("trigger_ending_pose"):
+		player.trigger_ending_pose()
+	
+	# 3. Final Reveal (Wristband visibility handled by player script)
+	await get_tree().create_timer(3.0).timeout
+	
+	# 4. Fade to Black / Ambiguous End
+	# (Assuming there's a UI element in the future, for now just quit or restart)
+	print("[GameManager] ENDING REACHED: YOU HAVE THE RED WRISTBAND.")
