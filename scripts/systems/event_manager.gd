@@ -16,6 +16,8 @@ extends Node
 var _current_tension: float = 0.1
 var _target_tension: float = 0.1
 var _mistakes: int = 0
+var _last_event_time: float = 0.0
+const EVENT_COOLDOWN: float = 3.2
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -91,6 +93,11 @@ func _trigger_delayed_consequence() -> void:
 
 
 func _trigger_environmental_event() -> void:
+	var now = Time.get_ticks_msec() / 1000.0
+	if now - _last_event_time < EVENT_COOLDOWN:
+		return
+	_last_event_time = now
+
 	# Sudden flickering, strange sound, or fake anomaly spike
 	print("Event Manager: Delayed Punishment triggering.")
 	_target_tension += 0.2
