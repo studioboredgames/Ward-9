@@ -10,6 +10,7 @@ signal cycle_ended(id: int)
 signal phase_changed(phase_name: String)
 signal decision_received(decision: String, patient: Node)
 signal patient_focused(patient: Node)
+signal focus_ended(patient: Node, duration: float)
 signal evaluation_updated(state: String, id: int)
 
 # ─── Transit Memory (Psychological State) ─────────────────────────────────────
@@ -57,6 +58,7 @@ func _connect_signals() -> void:
 		# Pro-Focus Signals: Forwarded to Evaluation
 		interaction_system.patient_focus_entered.connect(_on_input_focus_entered)
 		interaction_system.patient_focus_exited.connect(_on_input_focus_exited)
+		interaction_system.focus_ended.connect(_on_focus_ended)
 		
 		self.cycle_started.connect(interaction_system.enable_interaction)
 		self.cycle_ended.connect(interaction_system.disable_interaction)
@@ -72,6 +74,8 @@ func _connect_signals() -> void:
 	self.phase_changed.connect(event_manager.handle_phase_shift)
 	self.cycle_started.connect(event_manager.on_cycle_started)
 	self.evaluation_updated.connect(event_manager.process_evaluation)
+	
+	self.focus_ended.connect(anomaly_manager._on_focus_ended)
 
 	self.decision_received.connect(phase_manager._on_decision_received)
 
@@ -91,6 +95,10 @@ func _on_input_focus_entered(patient: Node) -> void:
 func _on_input_focus_exited(patient: Node) -> void:
 	if evaluation_manager: evaluation_manager.on_focus_ended(patient)
 	if patient.has_method("set"): patient.set("is_player_focusing", false)
+
+
+func _on_focus_ended(patient: Node, duration: float) -> void:
+	emit_signal("focus_ended", patient, duration)
 
 # ─── Core Signal Routing ──────────────────────────────────────────────────────
 

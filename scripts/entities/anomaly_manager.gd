@@ -41,8 +41,20 @@ func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
 	_decay_cooldowns()
 	
 	if patients.is_empty(): return
+	
+	_run_adaptive_cycle(profile)
+
+
+func _run_adaptive_cycle(profile: Dictionary) -> void:
+	# 🧠 Memory Violation Trigger (15% chance)
+	if randf() < 0.15:
+		var p = patients.pick_random()
+		if p.has_method("restore_previous_state"):
+			p.restore_previous_state()
+			return
+
 	if profile.is_empty(): 
-		# Fallback for first cycle or unprofiled starts
+		# Fallback for first cycle
 		var p = patients.pick_random()
 		p.apply_anomaly(ANOMALIES.pick_random())
 		return
@@ -51,20 +63,35 @@ func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
 	var target = _select_adaptive_target(profile)
 	var anomaly_type = _select_adaptive_anomaly(profile)
 
+	# 🧠 Confidence Trap: Reward high accuracy with more subtlety
+	var accuracy = profile.get("accuracy", 0.0)
+	var detail_multiplier = 1.0
+	var fake_boost = 0.0
+	
+	if accuracy > 0.7:
+		detail_multiplier = 0.5 # Shrink anomaly visuals
+		fake_boost = 0.2
+	
 	# Entropy Usage: Smooth scaling fake chance
 	var entropy = profile.get("focus_entropy", 0.0)
-	var fake_chance = clamp((entropy - 0.7) * 0.8, 0.0, 0.4)
+	var fake_chance = clamp((entropy - 0.7) * 0.8, 0.0, 0.4) + fake_boost
 	
 	if randf() < fake_chance:
 		_apply_fake_effect()
-		return # Mutually Exclusive: No real anomaly if fake fires
+		return
 
-	# Anti-Habit Delay: If player is rushing, delay the visual onset
-	if profile.get("avg_decision_time", 5.0) < 1.0:
-		await get_tree().create_timer(1.0).timeout
+	# 🧠 Late-Cycle Injection: Delay anomaly to create pressure
+	var phase_manager = get_tree().get_first_node_in_group("phase_manager")
+	if phase_manager:
+		var time_remaining = phase_manager.get_time_remaining()
+		# If early in cycle (more than 5s left), 40% chance to skip/delay
+		if time_remaining > 5.0 and randf() < 0.4:
+			print("[AnomalyManager] Delaying anomaly injection for tension.")
+			return 
 
 	if target and target.has_method("apply_anomaly"):
 		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name)
+		# Future: pass detail_multiplier to apply_anomaly for scaling
 		target.apply_anomaly(anomaly_type)
 
 
@@ -135,6 +162,31 @@ func _select_adaptive_anomaly(profile: Dictionary) -> String:
 		return ANOMALIES.pick_random() # In later builds, could return "subtle_tilt" etc.
 	
 	return ANOMALIES.pick_random()
+
+
+# ─── Clinical Betrayal (Reactive Changes) ────────────────────────────────────
+
+func _on_focus_ended(patient: Node, duration: float) -> void:
+	# 🧠 Focus Betrayal: Prolonged staring triggers micro-changes
+	if duration > 2.5 and randf() < 0.5:
+		print("[AnomalyManager] Focus Betrayal triggered on ", patient.name)
+		_trigger_micro_change(patient)
+
+
+func _trigger_micro_change(patient: Node) -> void:
+	if not patient or not patient.has_method("apply_anomaly"):
+		return
+	
+	var type = ["tilt", "shift"].pick_random()
+	var mesh = patient.get("mesh")
+	if not mesh: return
+	
+	# Ultra-subtle visual nudge (NOT a full anomaly state)
+	match type:
+		"tilt":
+			mesh.rotation_degrees.z += randf_range(2.0, 5.0)
+		"shift":
+			mesh.position.x += randf_range(0.01, 0.03)
 
 
 # ─── Internal ─────────────────────────────────────────────────────────────────

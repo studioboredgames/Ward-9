@@ -18,6 +18,10 @@ var _breath_tween: Tween
 var _jitter_timer: float = 0.0
 var _jitter_cooldown: float = 0.0
 
+# ─── Memory Violation Buffer ──────────────────────────────────────────────────
+var _state_history: Array = []
+const HISTORY_LIMIT := 5
+
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
@@ -56,6 +60,8 @@ func apply_anomaly(type: String) -> void:
 		"shift":
 			# Correct: 0.04 - 0.12 units
 			mesh.position.x = _base_position.x + randf_range(0.04, 0.12)
+	
+	_record_state()
 
 
 func clear_anomaly(is_unreliable: bool = false) -> void:
@@ -76,6 +82,8 @@ func clear_anomaly(is_unreliable: bool = false) -> void:
 			mesh.position = _base_position
 			mesh.rotation = _base_rotation
 			mesh.scale = _base_scale
+			
+	_record_state()
 
 
 # ─── Internal Animations ──────────────────────────────────────────────────────
@@ -118,3 +126,31 @@ func _start_breathing() -> void:
 
 func has_visible_anomaly() -> bool:
 	return is_anomalous
+
+
+func restore_previous_state() -> void:
+	if _state_history.size() < 2:
+		return
+	
+	# Memory Violation: Revert to a random historical state, NOT the base
+	var state = _state_history.pick_random()
+	if not mesh: return
+	
+	mesh.position = state.position
+	mesh.rotation = state.rotation
+	mesh.scale = state.scale
+	print("[Patient] Memory Violation: Restored historical state for ", name)
+
+
+func _record_state() -> void:
+	if not mesh: return
+	
+	var state = {
+		"position": mesh.position,
+		"rotation": mesh.rotation,
+		"scale": mesh.scale
+	}
+	
+	_state_history.append(state)
+	if _state_history.size() > HISTORY_LIMIT:
+		_state_history.pop_front()

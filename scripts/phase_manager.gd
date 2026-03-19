@@ -21,6 +21,9 @@ var current_phase_index: int = 0
 var current_cycle_id: int = 0
 var _cycle_completed: bool = false
 
+var cycle_start_time: float = 0.0
+var cycle_duration: float = 15.0 # Default fallback
+
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:

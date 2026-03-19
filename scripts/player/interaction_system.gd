@@ -7,6 +7,7 @@ extends Node
 
 signal patient_focus_entered(patient: Node)
 signal patient_focus_exited(patient: Node)
+signal focus_ended(patient: Node, duration: float)
 signal decision_window_opened(patient: Node)
 signal decision_window_closed
 
@@ -92,6 +93,9 @@ func _handle_focus_signals(new_hit: Node) -> void:
 		return
 		
 	if _last_hit_patient != null:
+		if _last_hit_patient.has_meta("focus_start_time"):
+			var duration = (Time.get_ticks_msec() - _last_hit_patient.get_meta("focus_start_time")) / 1000.0
+			emit_signal("focus_ended", _last_hit_patient, duration)
 		emit_signal("patient_focus_exited", _last_hit_patient)
 	
 	if new_hit != null:
