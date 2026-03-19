@@ -51,11 +51,26 @@ func _ready() -> void:
 
 
 func _on_play_pressed() -> void:
+	# 1. Loading Screen
+	var canvas = get_node_or_null("CanvasLayer")
+	var loading = canvas.get_node("LoadingOverlay") if canvas else null
+	if loading: loading.show()
+	
+	await get_tree().create_timer(2.0).timeout
+	if loading: loading.hide()
+
+	# 2. Outside Intro
+	_decision_locked = false
+	var locations = ["Tokyo, Japan", "Delhi, India", "Chicago, USA"]
+	var my_location = locations.pick_random()
+	
 	if phase_manager:
 		phase_manager.start_game()
 	
 	var sm = get_tree().get_first_node_in_group("subtitle_manager")
 	if sm:
+		sm.display_text("Location: Ward 9, " + my_location, 5.0)
+		await get_tree().create_timer(4.0).timeout
 		sm.display_text("Shift starting. Monitor the patients.", 4.0)
 
 

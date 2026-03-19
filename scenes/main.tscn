@@ -68,7 +68,7 @@ autoplay = true
 [node name="Ward" parent="World" instance=ExtResource("9_wd")]
 
 [node name="Player" type="CharacterBody3D" parent="World" groups=["player"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15) # Start in the Hallway (Outside intro simulation)
 script = ExtResource("7_pc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="World/Player"]
@@ -83,6 +83,33 @@ script = ExtResource("8_is")
 camera_path = NodePath("../Camera3D")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="LoadingOverlay" type="ColorRect" parent="CanvasLayer"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.04, 0.05, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/LoadingOverlay"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -50.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Label" type="Label" parent="CanvasLayer/LoadingOverlay/MarginContainer"]
+layout_mode = 2
+text = "INITIALIZING ANALYSIS..."
 
 [node name="Crosshair" type="ColorRect" parent="CanvasLayer" groups=["crosshair"]]
 custom_minimum_size = Vector2(4, 4)
@@ -132,24 +159,6 @@ text = "Something Wrong"
 layout_mode = 2
 text = "All Normal"
 
-[node name="SubtitleManager" type="CanvasLayer" parent="." groups=["subtitle_manager"]]
-script = ExtResource("18_sm")
-
-[node name="SubtitleLabel" type="RichTextLabel" parent="SubtitleManager"]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -400.0
-offset_top = -100.0
-offset_right = 400.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 0
-bbcode_enabled = true
-text = "[center]Sample Subtitle Text[/center]"
-
 [node name="MainMenu" type="Control" parent="CanvasLayer" groups=["main_menu"]]
 layout_mode = 3
 anchors_preset = 15
@@ -195,7 +204,7 @@ text = "PLAY"
 
 [node name="SettingsButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
 layout_mode = 2
-text = "SUBTITLES: ON"
+text = "SETTINGS"
 
 [node name="DiscordButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
 layout_mode = 2
@@ -204,3 +213,53 @@ text = "DISCORD"
 [node name="ExitButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
 layout_mode = 2
 text = "EXIT"
+
+[node name="SettingsContainer" type="VBoxContainer" parent="CanvasLayer/MainMenu"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="VideoButton" type="Button" parent="CanvasLayer/MainMenu/SettingsContainer"]
+layout_mode = 2
+text = "VIDEO: FULLSCREEN"
+
+[node name="AudioButton" type="Button" parent="CanvasLayer/MainMenu/SettingsContainer"]
+layout_mode = 2
+text = "AUDIO: ON"
+
+[node name="SubtitleButton" type="Button" parent="CanvasLayer/MainMenu/SettingsContainer"]
+layout_mode = 2
+text = "SUBTITLES: ON"
+
+[node name="BackButton" type="Button" parent="CanvasLayer/MainMenu/SettingsContainer"]
+layout_mode = 2
+text = "BACK"
+
+[node name="SubtitleManager" type="CanvasLayer" parent="." groups=["subtitle_manager"]]
+script = ExtResource("18_sm")
+
+[node name="SubtitleLabel" type="RichTextLabel" parent="SubtitleManager"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -100.0
+offset_right = 400.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+bbcode_enabled = true
+text = "[center][/center]"
