@@ -7,6 +7,7 @@ const ANOMALIES: Array[String] = ["tilt", "breath", "shift"]
 var patients: Array[Node] = []
 var _current_phase: String = "shift_start"
 var _last_cycle_processed: int = -1
+var _cycle_active: bool = false # Execution lock
 
 var _last_target: Node = null
 var _target_cooldown: Dictionary = {} # Node -> float penalty
@@ -30,7 +31,10 @@ func handle_phase_shift(phase_name: String) -> void:
 
 ## Called by game_manager router. Receives the learned Behavior Profile.
 func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
+	if _cycle_active: return
 	if cycle_id == _last_cycle_processed: return
+	
+	_cycle_active = true
 	_last_cycle_processed = cycle_id
 	
 	_clear_all()
@@ -47,10 +51,13 @@ func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
 	var target = _select_adaptive_target(profile)
 	var anomaly_type = _select_adaptive_anomaly(profile)
 
-	# Entropy Usage: High scanning entropy -> player is careful -> increase fakes
-	if profile.get("focus_entropy", 0.0) > 1.0:
-		if randf() < 0.4:
-			_apply_fake_effect()
+	# Entropy Usage: Smooth scaling fake chance
+	var entropy = profile.get("focus_entropy", 0.0)
+	var fake_chance = clamp((entropy - 0.7) * 0.8, 0.0, 0.4)
+	
+	if randf() < fake_chance:
+		_apply_fake_effect()
+		return # Mutually Exclusive: No real anomaly if fake fires
 
 	# Anti-Habit Delay: If player is rushing, delay the visual onset
 	if profile.get("avg_decision_time", 5.0) < 1.0:
@@ -62,7 +69,7 @@ func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
 
 
 func cleanup_cycle(_id: int) -> void:
-	pass
+	_cycle_active = false
 
 # ─── Adaptive Selection ───────────────────────────────────────────────────────
 

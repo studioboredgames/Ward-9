@@ -132,6 +132,10 @@ func _on_input_patient_unfocused() -> void:
 func _on_input_decision_submitted(decision: String) -> void:
 	if _decision_locked: return
 	if _current_patient == null: return
+	
+	# Debug Hook: Decision Diversity Testing
+	# if randf() < 0.2: decision = "Something Wrong"
+	
 	_decision_locked = true
 	
 	if evaluation_manager:
