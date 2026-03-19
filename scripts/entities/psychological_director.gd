@@ -16,6 +16,7 @@ var profile_history: Array = []
 var distortion_active: bool = false
 var current_cycle: int = 0
 var patients: Array[Node] = []
+var consequence_queue: Array = [] # Stores {type, cycle_target}
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -65,30 +66,62 @@ func process_cycle() -> void:
 	distortion_active = true
 	print("[Director] Orchestrating Distortion: ", result.type)
 	emit_signal("distortion_requested", result.type, result.payload)
+	
+	# Phase 7: Delayed Consequences (Queue a follow-up)
+	if result.get("queued_effect"):
+		consequence_queue.append({
+			"type": result.queued_effect,
+			"target_cycle": current_cycle + randi_range(2, 3)
+		})
+
+
+func _check_consequence_queue() -> void:
+	for i in range(consequence_queue.size() - 1, -1, -1):
+		var c = consequence_queue[i]
+		if current_cycle >= c.target_cycle:
+			_execute_consequence(c)
+			consequence_queue.remove_at(i)
+
+
+func _execute_consequence(c: Dictionary) -> void:
+	print("[Director] Executing Delayed Consequence: ", c.type)
+	if c.type == "truth_flip":
+		var ti = get_tree().get_first_node_in_group("truth_instability")
+		if ti: ti.set_deferred("active_this_cycle", true)
 
 
 # ─── Strategy Selection ───────────────────────────────────────────────────────
 
 func _select_distortion(profile: Dictionary) -> Dictionary:
-	# Select distortion based on behavior profile
+	var entropy = profile.get("focus_entropy", 1.0)
+	var bias = profile.get("bias", {"normal_bias": 0.5})
+	var speed = profile.get("avg_decision_time", 5.0)
+	var accuracy = profile.get("accuracy", 1.0)
+	
 	var type = "perception_drift"
 	var target = _random_patient()
-	
-	# Phase 9: Identity Attack (Speed Punishment)
-	if profile.get("avg_decision_time", 5.0) < 2.5:
+	var queued = null
+
+	# Phase 9 & 10: Control & Identity Attacks
+	if speed < 3.0: # Fast Player: Trap with persistence
 		type = "fake_persistence"
-	elif profile.get("accuracy", 1.0) > 0.8:
-		type = "memory_desync"
+		if randf() < 0.3: queued = "truth_flip" # Punish speed later
+	elif entropy < 0.6: # Paranoia: Target blindness
+		type = "temporal_echo"
+	elif bias.get("normal_bias", 0.0) > 0.8: # Passive: Bleed
+		type = "reality_bleed" # Maps to distorter
 	else:
-		var types = ["perception_drift", "temporal_echo"]
-		type = types.pick_random()
+		var pool = ["perception_drift", "memory_desync", "ui_betrayal"]
+		type = pool.pick_random()
 
 	return {
 		"type": type,
 		"payload": {
 			"target": target,
-			"type": "tilt" # Default type for persistence/echoes if not stored
-		}
+			"type": "tilt",
+			"speed_context": speed
+		},
+		"queued_effect": queued
 	}
 
 

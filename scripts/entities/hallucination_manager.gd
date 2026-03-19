@@ -22,6 +22,10 @@ func trigger(type: String, payload: Dictionary) -> void:
 			_apply_fake_persistence(payload)
 		"temporal_echo":
 			_apply_temporal_echo(payload)
+		"ui_betrayal":
+			_apply_ui_betrayal(payload)
+		"reality_bleed":
+			_apply_reality_bleed()
 	
 	# Reset guard after a short window
 	await get_tree().create_timer(2.0).timeout
@@ -60,3 +64,19 @@ func _apply_temporal_echo(p: Dictionary) -> void:
 	await get_tree().create_timer(0.8).timeout
 	if p.get("target") and p.get("target").has_method("apply_anomaly"):
 		p.get("target").apply_anomaly(p.get("type", "tilt"))
+
+
+func _apply_ui_betrayal(_p: Dictionary) -> void:
+	var ui = get_tree().get_first_node_in_group("decision_ui")
+	if not ui: return
+	print("[Hallucination] UI Betrayal: Flicker")
+	ui.modulate.a = 0.4
+	await get_tree().create_timer(0.2).timeout
+	ui.modulate.a = 1.0
+
+
+func _apply_reality_bleed() -> void:
+	var rd = get_tree().get_first_node_in_group("reality_distorter")
+	if rd:
+		if randf() < 0.5: rd.trigger_visual_glitch()
+		else: rd.trigger_audio_event()
