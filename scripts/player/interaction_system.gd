@@ -52,6 +52,17 @@ func _ready() -> void:
 	_reset_dwell()
 
 
+func _input(event: InputEvent) -> void:
+	if not interaction_enabled or decision_window_active: return
+	
+	# Manual "E" interaction fallback
+	if event is InputEventKey and event.pressed and event.keycode == KEY_E:
+		var hit = _raycast()
+		if hit:
+			_current_target = hit
+			_trigger_decision_window()
+
+
 func _physics_process(delta: float) -> void:
 	if not interaction_enabled or decision_window_active:
 		_update_crosshair_visuals(false)

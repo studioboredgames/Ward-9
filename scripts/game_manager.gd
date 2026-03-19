@@ -67,6 +67,9 @@ func _on_play_pressed() -> void:
 	if phase_manager:
 		phase_manager.start_game()
 	
+	if interaction_system:
+		interaction_system.enable_interaction()
+	
 	var sm = get_tree().get_first_node_in_group("subtitle_manager")
 	if sm:
 		sm.display_text("Location: Ward 9, " + my_location, 5.0)
