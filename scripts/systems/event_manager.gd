@@ -43,11 +43,20 @@ func _trigger_atmospheric_change() -> void:
 func _scale_horror_intensity() -> void:
 	# Scale complexity of environmental glitches based on how "suspicious" the player is
 	match _current_evaluation:
+		"stable":
+			if _ambient_hum:
+				_ambient_hum.pitch_scale = 1.0
+				_ambient_hum.volume_db = -15.0
 		"suspicious":
 			# Flickering lights, distant footsteps
-			pass
+			if _ambient_hum:
+				_ambient_hum.pitch_scale = 0.9 # Deeper, more unsettling
+				_ambient_hum.volume_db = -10.0
 		"failed":
 			# High-intensity auditory hallucinations, patient model distortions
+			if _ambient_hum:
+				_ambient_hum.pitch_scale = 0.8
+				_ambient_hum.volume_db = -5.0
 			_schedule_climax_event()
 
 
