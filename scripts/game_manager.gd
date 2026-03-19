@@ -1,97 +1,85 @@
 extends Node
 ## game_manager.gd
 ## Responsibility: Central signal router and system connector.
-## Strictly follows "one-directional" flow: receives reports, fans out commands.
-## Contains ONLY minimal transit memory; no complex phase or gameplay logic.
+## Stores minimal transit memory; contains NO game logic or state decisions.
 
-# ─── Transit Memory (Minimal) ────────────────────────────────────────────────
+# ─── Transit Memory ───────────────────────────────────────────────────────────
 
-var last_decision: String = ""   ## "all_normal" | "something_wrong"
-var last_cycle_id: int = -1      ## Mirrors phase_manager's current cycle
+var last_decision: String = ""
+var last_cycle_id: int = 0
 
-# ─── Node References (Core Systems) ──────────────────────────────────────────
+# ─── Node References ──────────────────────────────────────────────────────────
 
 @onready var phase_manager: Node = $PhaseManager
 @onready var anomaly_manager: Node = $AnomalyManager
 @onready var evaluation_manager: Node = $EvaluationManager
 @onready var event_manager: Node = $EventManager
+
+# These are gathered from groups to avoid tight coupling to the scene tree structure
 @onready var interaction_system: Node = get_tree().get_first_node_in_group("interaction_system")
 @onready var decision_ui: Control = get_tree().get_first_node_in_group("decision_ui")
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	# Add to group for easier lookup if needed, though this is the root typically.
-	add_to_group("game_manager")
 	_connect_signals()
 
-# ─── Signal Routing (Fan-In) ─────────────────────────────────────────────────
 
 func _connect_signals() -> void:
-	# From Phase Manager
+	# From phase_manager
 	phase_manager.cycle_started.connect(_on_cycle_started)
 	phase_manager.cycle_ended.connect(_on_cycle_ended)
 	phase_manager.phase_changed.connect(_on_phase_changed)
 	
-	# From Interaction System
-	if interaction_system:
-		interaction_system.decision_window_opened.connect(_on_decision_window_opened)
-	
-	# From Decision UI
+	# From decision_ui
 	if decision_ui:
 		decision_ui.decision_submitted.connect(_on_decision_submitted)
 	
-	# From Evaluation Manager
-	evaluation_manager.evaluation_updated.connect(_on_evaluation_updated)
+	# From interaction_system
+	if interaction_system:
+		interaction_system.decision_window_opened.connect(_on_decision_window_opened)
 
-# ─── Fan-Out Handlers ────────────────────────────────────────────────────────
+# ─── Signal Routing (Fan-Out) ─────────────────────────────────────────────────
 
 func _on_cycle_started(cycle_id: int) -> void:
 	last_cycle_id = cycle_id
-	# Command anomaly_manager to refresh world for new cycle
-	anomaly_manager.prepare_cycle(cycle_id)
-	# Enable player interaction
+	
+	# Forward to dependent systems
+	if anomaly_manager:
+		anomaly_manager.prepare_cycle(cycle_id)
+		
 	if interaction_system:
 		interaction_system.enable()
 
 
 func _on_cycle_ended(cycle_id: int) -> void:
-	# Disable interaction immediately
+	# Forward to dependent systems
 	if interaction_system:
 		interaction_system.disable()
 	
-	# Force close UI if still open
-	if decision_ui:
-		decision_ui.force_close()
-	
-	# Report results to evaluation_manager after short delay (per spec)
-	var timer := get_tree().create_timer(randf_range(0.3, 0.5))
-	await timer.timeout
-	evaluation_manager.log_decision(last_decision, cycle_id)
+	if evaluation_manager:
+		evaluation_manager.log_decision(last_decision, cycle_id)
 
 
 func _on_phase_changed(phase_name: String) -> void:
-	# Inform systems of phase shift (for atmospheric changes, etc.)
-	event_manager.handle_phase_shift(phase_name)
-	anomaly_manager.handle_phase_shift(phase_name)
+	if anomaly_manager:
+		anomaly_manager.handle_phase_shift(phase_name)
+		
+	if event_manager:
+		event_manager.handle_phase_shift(phase_name)
 
 
 func _on_decision_window_opened(patient: Node) -> void:
-	# Show UI
 	if decision_ui:
 		decision_ui.display_for_patient(patient)
 
 
 func _on_decision_submitted(decision: String) -> void:
 	last_decision = decision
-	# Acknowledge back to interaction system to unlock its internal gate
+	
+	# Report back to authority to progress the game
+	phase_manager.complete_current_cycle()
+	
+	# Optional: acknowledge back to interaction system if needed
 	if interaction_system:
 		interaction_system.acknowledge_decision()
-	
-	# Trigger phase_manager to wrap up the cycle
-	phase_manager.complete_current_cycle()
-
-
-func _on_evaluation_updated(state: String, cycle_id: int) -> void:
-	# Event manager reacts to the player's performance
-	event_manager.process_evaluation(state, cycle_id)
