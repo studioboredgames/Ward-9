@@ -27,6 +27,10 @@ var cycle_duration: float = 15.0 # Default fallback
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
+	pass
+
+
+func start_game() -> void:
 	call_deferred("_start_game")
 
 

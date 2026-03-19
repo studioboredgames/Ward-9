@@ -1,88 +1,90 @@
-[gd_scene format=3 uid="uid://main"]
+[gd_scene load_steps=19 format=3 uid="uid://main"]
 
-[ext_resource type="Script" uid="uid://u63h0oafg6ca" path="res://scripts/game_manager.gd" id="1_gm"]
-[ext_resource type="Script" uid="uid://cnph7oklmld8q" path="res://scripts/phase_manager.gd" id="2_pm"]
-[ext_resource type="Script" uid="uid://gef57to302xk" path="res://scripts/entities/anomaly_manager.gd" id="3_am"]
-[ext_resource type="Script" uid="uid://cwql0fppgxl34" path="res://scripts/entities/evaluation_manager.gd" id="4_em"]
-[ext_resource type="Script" uid="uid://btwv4vhdlc6c0" path="res://scripts/systems/event_manager.gd" id="5_ev"]
-[ext_resource type="Script" uid="uid://bviy5e3sfmtkq" path="res://scripts/ui/decision_ui.gd" id="6_ui"]
-[ext_resource type="Script" uid="uid://b0wro73khc5jr" path="res://scripts/player/player_controller.gd" id="7_pc"]
-[ext_resource type="Script" uid="uid://inw62jexa77s" path="res://scripts/player/interaction_system.gd" id="8_is"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
+[ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
+[ext_resource type="Script" path="res://scripts/entities/anomaly_manager.gd" id="3_am"]
+[ext_resource type="Script" path="res://scripts/entities/evaluation_manager.gd" id="4_em"]
+[ext_resource type="Script" path="res://scripts/systems/event_manager.gd" id="5_ev"]
+[ext_resource type="Script" path="res://scripts/ui/decision_ui.gd" id="6_ui"]
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="7_pc"]
+[ext_resource type="Script" path="res://scripts/player/interaction_system.gd" id="8_is"]
 [ext_resource type="PackedScene" uid="uid://ward" path="res://scenes/rooms/ward.tscn" id="9_wd"]
-[ext_resource type="Script" uid="uid://dn3db7yho2b4y" path="res://scripts/entities/psychological_director.gd" id="10_pd"]
-[ext_resource type="Script" uid="uid://byrqwsolhfsqq" path="res://scripts/entities/hallucination_manager.gd" id="11_hm"]
-[ext_resource type="Script" uid="uid://biopwl74e6x63" path="res://scripts/entities/behavior_analyzer.gd" id="12_ba"]
-[ext_resource type="Script" uid="uid://dy2f44chsnq1p" path="res://scripts/entities/truth_instability.gd" id="13_ti"]
-[ext_resource type="Script" uid="uid://bpek2tm0git8q" path="res://scripts/entities/reality_distorter.gd" id="14_rd"]
-[ext_resource type="Script" uid="uid://sqmenk4rkmgv" path="res://scripts/entities/player_model.gd" id="15_plm"]
-[ext_resource type="Script" uid="uid://ckal2bpqyae6h" path="res://scripts/entities/input_distorter.gd" id="16_id"]
+[ext_resource type="Script" path="res://scripts/entities/psychological_director.gd" id="10_pd"]
+[ext_resource type="Script" path="res://scripts/entities/hallucination_manager.gd" id="11_hm"]
+[ext_resource type="Script" path="res://scripts/entities/behavior_analyzer.gd" id="12_ba"]
+[ext_resource type="Script" path="res://scripts/entities/truth_instability.gd" id="13_ti"]
+[ext_resource type="Script" path="res://scripts/entities/reality_distorter.gd" id="14_rd"]
+[ext_resource type="Script" path="res://scripts/entities/player_model.gd" id="15_plm"]
+[ext_resource type="Script" path="res://scripts/entities/input_distorter.gd" id="16_id"]
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="17_mm"]
+[ext_resource type="Script" path="res://scripts/ui/subtitle_manager.gd" id="18_sm"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pl"]
 radius = 0.4
 height = 1.8
 
-[node name="Main" type="Node" unique_id=1440137512]
+[node name="Main" type="Node"]
 script = ExtResource("1_gm")
 
-[node name="PhaseManager" type="Node" parent="." unique_id=490726140]
+[node name="PhaseManager" type="Node" parent="."]
 script = ExtResource("2_pm")
 
-[node name="AnomalyManager" type="Node" parent="." unique_id=1062864534]
+[node name="AnomalyManager" type="Node" parent="."]
 script = ExtResource("3_am")
 
-[node name="EvaluationManager" type="Node" parent="." unique_id=1351012621]
+[node name="EvaluationManager" type="Node" parent="." groups=["evaluation_manager"]]
 script = ExtResource("4_em")
 
-[node name="EventManager" type="Node" parent="." unique_id=337131837]
+[node name="EventManager" type="Node" parent="." groups=["event_manager"]]
 script = ExtResource("5_ev")
 
-[node name="PsychologicalDirector" type="Node" parent="." unique_id=1639476196]
+[node name="PsychologicalDirector" type="Node" parent="."]
 script = ExtResource("10_pd")
 
-[node name="HallucinationManager" type="Node" parent="." unique_id=401436281]
+[node name="HallucinationManager" type="Node" parent="."]
 script = ExtResource("11_hm")
 
-[node name="BehaviorAnalyzer" type="Node" parent="." unique_id=1902049776]
+[node name="BehaviorAnalyzer" type="Node" parent="."]
 script = ExtResource("12_ba")
 
-[node name="TruthInstability" type="Node" parent="." unique_id=1288928399]
+[node name="TruthInstability" type="Node" parent="."]
 script = ExtResource("13_ti")
 
-[node name="RealityDistorter" type="Node" parent="." unique_id=1786189631]
+[node name="RealityDistorter" type="Node" parent="."]
 script = ExtResource("14_rd")
 
-[node name="PlayerModel" type="Node" parent="." unique_id=904364885]
+[node name="PlayerModel" type="Node" parent="."]
 script = ExtResource("15_plm")
 
-[node name="InputDistorter" type="Node" parent="." unique_id=537628474]
+[node name="InputDistorter" type="Node" parent="."]
 script = ExtResource("16_id")
 
-[node name="AmbientPlayer" type="AudioStreamPlayer" parent="." unique_id=132909958]
+[node name="AmbientPlayer" type="AudioStreamPlayer" parent="." groups=["ambient_audio"]]
 volume_db = -15.0
 autoplay = true
 
-[node name="World" type="Node3D" parent="." unique_id=1681413012]
+[node name="World" type="Node3D" parent="."]
 
-[node name="Ward" parent="World" unique_id=1146479684 instance=ExtResource("9_wd")]
+[node name="Ward" parent="World" instance=ExtResource("9_wd")]
 
-[node name="Player" type="CharacterBody3D" parent="World" unique_id=1019382301 groups=["player"]]
+[node name="Player" type="CharacterBody3D" parent="World" groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
 script = ExtResource("7_pc")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Player" unique_id=1654963987]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="World/Player"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_pl")
 
-[node name="Camera3D" type="Camera3D" parent="World/Player" unique_id=207640640 groups=["player_camera"]]
+[node name="Camera3D" type="Camera3D" parent="World/Player" groups=["player_camera"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
 
-[node name="InteractionSystem" type="Node" parent="World/Player" unique_id=1562100742 groups=["interaction_system"]]
+[node name="InteractionSystem" type="Node" parent="World/Player" groups=["interaction_system"]]
 script = ExtResource("8_is")
 camera_path = NodePath("../Camera3D")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1175305607]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Crosshair" type="ColorRect" parent="CanvasLayer" unique_id=1823882162 groups=["crosshair"]]
+[node name="Crosshair" type="ColorRect" parent="CanvasLayer" groups=["crosshair"]]
 custom_minimum_size = Vector2(4, 4)
 anchors_preset = 8
 anchor_left = 0.5
@@ -98,7 +100,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 0.498039)
 
-[node name="DecisionUI" type="Control" parent="CanvasLayer" unique_id=1878326106 groups=["decision_ui"]]
+[node name="DecisionUI" type="Control" parent="CanvasLayer" groups=["decision_ui"]]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -108,7 +110,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("6_ui")
 
-[node name="PromptContainer" type="VBoxContainer" parent="CanvasLayer/DecisionUI" unique_id=53497640]
+[node name="PromptContainer" type="VBoxContainer" parent="CanvasLayer/DecisionUI"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -122,10 +124,79 @@ offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="AnomalyButton" type="Button" parent="CanvasLayer/DecisionUI/PromptContainer" unique_id=261818176]
+[node name="AnomalyButton" type="Button" parent="CanvasLayer/DecisionUI/PromptContainer"]
 layout_mode = 2
 text = "Something Wrong"
 
-[node name="NormalButton" type="Button" parent="CanvasLayer/DecisionUI/PromptContainer" unique_id=2143841009]
+[node name="NormalButton" type="Button" parent="CanvasLayer/DecisionUI/PromptContainer"]
 layout_mode = 2
 text = "All Normal"
+
+[node name="SubtitleManager" type="CanvasLayer" parent="." groups=["subtitle_manager"]]
+script = ExtResource("18_sm")
+
+[node name="SubtitleLabel" type="RichTextLabel" parent="SubtitleManager"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -100.0
+offset_right = 400.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+bbcode_enabled = true
+text = "[center]Sample Subtitle Text[/center]"
+
+[node name="MainMenu" type="Control" parent="CanvasLayer" groups=["main_menu"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("17_mm")
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/MainMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.05, 0.06, 0.08, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/MainMenu"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="CanvasLayer/MainMenu/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "WARD 9"
+horizontal_alignment = 1
+
+[node name="PlayButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
+layout_mode = 2
+text = "PLAY"
+
+[node name="DiscordButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
+layout_mode = 2
+text = "DISCORD"
+
+[node name="ExitButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
+layout_mode = 2
+text = "EXIT"
