@@ -1,4 +1,10 @@
-[gd_scene load_steps=1 format=3 uid="uid://bed"]
+[gd_scene load_steps=3 format=3 uid="uid://bed"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frame"]
+albedo_color = Color(0.4, 0.4, 0.45, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mattress"]
+albedo_color = Color(0.9, 0.9, 0.95, 1)
 
 [node name="Bed" type="Node3D"]
 
@@ -13,9 +19,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 use_collision = true
 size = Vector3(1.1, 0.2, 2.1)
 material = SubResource("StandardMaterial3D_mattress")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frame"]
-albedo_color = Color(0.4, 0.4, 0.45, 1) # Metal blue-grey
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mattress"]
-albedo_color = Color(0.9, 0.9, 0.95, 1) # White-ish hospital sheet
