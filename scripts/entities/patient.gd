@@ -132,7 +132,7 @@ func _apply_micro_jitter() -> void:
 	tween.tween_property(mesh, "position:x", mesh.position.x, 0.1)
 
 
-func _start_breathing(intensity_mult: float = 1.0) -> void:
+func _start_breathing(_intensity_mult: float = 1.0) -> void:
 	# This function is now deprecated as breathing is handled in _process_breathing
 	# Keeping it for now in case it's still called elsewhere, but it won't do anything.
 	pass

@@ -97,7 +97,7 @@ func _select_distortion(profile: Dictionary) -> Dictionary:
 	var entropy = profile.get("focus_entropy", 1.0)
 	var bias = profile.get("bias", {"normal_bias": 0.5})
 	var speed = profile.get("avg_decision_time", 5.0)
-	var accuracy = profile.get("accuracy", 1.0)
+	var _accuracy = profile.get("accuracy", 1.0)
 	
 	var type = "perception_drift"
 	var target = _random_patient()
