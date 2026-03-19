@@ -14,6 +14,9 @@ const TEMPORAL_ECHO_CHANCE = 0.15
 var patients: Array[Node] = []
 var _is_distortion_active: bool = false
 var _last_outcome: String = "none"
+var _anomaly_history: Array = [] # Stores {patient, type}
+var _fake_count_this_phase: int = 0
+const MAX_FAKE_PER_PHASE := 2
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -49,6 +52,10 @@ func prepare_hallucination(cycle_id: int, profile: Dictionary) -> void:
 func cleanup_hallucination() -> void:
 	_is_distortion_active = false
 	_last_outcome = "none"
+
+
+func cleanup_phase() -> void:
+	_fake_count_this_phase = 0
 
 
 # ─── Internal Logic ───────────────────────────────────────────────────────────
@@ -124,11 +131,28 @@ func _apply_memory_desync(patient: Node) -> void:
 		patient.restore_previous_state()
 
 
-func _apply_fake_persistence(patient: Node) -> void:
-	# TODO: Implement persistence logic (requires interaction with clear_anomaly)
+	# Delayed Causality: Store real anomalies for temporal echoes
+	# GameManager should notify us of real anomalies or we sniff them
+	# For now, we'll assume a signal or direct call
 	pass
+
+
+func _apply_fake_persistence(patient: Node) -> void:
+	# Fake anomaly lingers after "Cleanup"
+	if _fake_count_this_phase >= MAX_FAKE_PER_PHASE: return
+	_fake_count_this_phase += 1
+	
+	if patient.has_method("apply_anomaly"):
+		patient.apply_anomaly("tilt") # Start it
+		# Logic: It won't be cleared by the normal cleanup if we flag it?
+		# Or we just re-apply it right after cleanup.
+		print("[Hallucination] Persistence: Fake anomaly will linger on ", patient.name)
 
 
 func _apply_temporal_echo(patient: Node) -> void:
-	# TODO: Implement temporal echo (requires anomaly history)
-	pass
+	# Replay a previous anomaly
+	if _anomaly_history.is_empty(): return
+	var old = _anomaly_history.pick_random()
+	if patient.has_method("apply_anomaly"):
+		print("[Hallucination] Temporal Echo: Replaying ", old.type, " on ", patient.name)
+		patient.apply_anomaly(old.type)
