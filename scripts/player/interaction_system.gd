@@ -13,15 +13,23 @@ signal decision_window_opened(patient: Node)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-@export var raycast_distance: float = 3.0  ## Max patient detection range (m)
-@export var dwell_min: float = 0.6         ## Minimum dwell threshold (s)
-@export var dwell_max: float = 0.9         ## Maximum dwell threshold (s)
-## NodePath to Camera3D set in the inspector — avoids fragile group lookup.
-@export var camera_path: NodePath
+@export_group("Raycast")
+@export var ray_length: float = 3.0
+@export_node_path("Camera3D") var camera_path: NodePath
 ## Collision layer mask for patient physics bodies.
 ## Patients must be assigned to the matching layer in the Godot inspector.
 ## Default: layer 3 (bit index 2). Change here if your setup differs.
 @export_flags_3d_physics var patient_collision_mask: int = 0b100
+
+@export_group("Dwell Timing")
+@export var dwell_threshold_min: float = 0.6
+@export var dwell_threshold_max: float = 0.9
+@export var switch_grace_window: float = 0.2
+
+@export_group("Visuals")
+@export var crosshair_group: String = "crosshair"
+@export var target_color: Color = Color(1, 0.2, 0.2, 0.8) # Subtle red when targeting
+@export var normal_color: Color = Color(1, 1, 1, 0.5)
 
 # ─── Public State (read-only outside this node) ───────────────────────────────
 
@@ -33,50 +41,32 @@ var decision_window_active: bool = false
 var _dwell_timer: float = 0.0
 var _dwell_threshold: float = 0.75  ## Randomized each trigger
 var _current_target: Node = null
-var _camera: Camera3D = null
+var _camera: Camera3D
+var _crosshair: ColorRect
 ## Grace window: brief period after losing sight before dwell fully resets.
 var _lost_target_timer: float = 0.0
-var _lost_target_grace: float = 0.2
+
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
-	randomize()  # Ensure non-deterministic dwell sequence every run.
-	_randomize_dwell_threshold()
-	# Resolve camera from exported NodePath if set; fall back to group search.
-	if camera_path and not camera_path.is_empty():
-		_camera = get_node(camera_path)
-	else:
-		call_deferred("_find_camera")
+	randomize()
+	add_to_group("interaction_system")
+	_setup_camera()
+	_setup_crosshair()
+	_reset_dwell()
 
 
 func _physics_process(delta: float) -> void:
 	if not interaction_enabled or decision_window_active:
 		return
 
-	var hit := _raycast()
+	var hit_patient := _raycast()
 
-	if hit != null and hit.is_in_group("patient"):
-		if hit == _current_target:
-			# On-target: reset grace timer; accumulate dwell.
-			_lost_target_timer = 0.0
-			_dwell_timer += delta
-		else:
-			# Different patient: use grace window before switching.
-			_lost_target_timer += delta
-			if _lost_target_timer > _lost_target_grace:
-				_reset_dwell()
-				_current_target = hit
-				_lost_target_timer = 0.0
-
-		# Defensive double-check: guard against same-frame desync.
-		if _dwell_timer >= _dwell_threshold and not decision_window_active:
-			_trigger_decision_window()
+	if hit_patient:
+		_process_patient_hit(hit_patient, delta)
 	else:
-		# Off all patients: accumulate grace before full reset.
-		_lost_target_timer += delta
-		if _lost_target_timer > _lost_target_grace:
-			_reset_dwell()
+		_process_miss()
 
 # ─── Public API (called by phase_manager) ─────────────────────────────────────
 
@@ -107,14 +97,22 @@ func acknowledge_decision() -> void:
 
 # ─── Internal ─────────────────────────────────────────────────────────────────
 
-func _find_camera() -> void:
-	var cameras := get_tree().get_nodes_in_group("player_camera")
-	if cameras.size() > 0:
-		_camera = cameras[0]
-		if cameras.size() > 1:
-			push_warning("interaction_system: multiple nodes in 'player_camera' — using first. Set camera_path export instead.")
+func _setup_camera() -> void:
+	# Resolve camera from exported NodePath if set; fall back to group search.
+	if camera_path and not camera_path.is_empty():
+		_camera = get_node(camera_path)
 	else:
-		push_error("interaction_system: no node in group 'player_camera' found. Set the camera_path export property.")
+		var cameras := get_tree().get_nodes_in_group("player_camera")
+		if cameras.size() > 0:
+			_camera = cameras[0]
+			if cameras.size() > 1:
+				push_warning("interaction_system: multiple nodes in 'player_camera' — using first. Set camera_path export instead.")
+		else:
+			push_error("interaction_system: no node in group 'player_camera' found. Set the camera_path export property.")
+
+
+func _setup_crosshair() -> void:
+	_crosshair = get_tree().get_first_node_in_group(crosshair_group) as ColorRect
 
 
 func _raycast() -> Node:

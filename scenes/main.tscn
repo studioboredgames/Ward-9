@@ -35,6 +35,22 @@ script = ExtResource("5_ev")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
+[node name="Crosshair" type="ColorRect" parent="CanvasLayer" groups=["crosshair"]]
+custom_minimum_size = Vector2(4, 4)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.498039)
+
 [node name="DecisionUI" type="Control" parent="CanvasLayer" groups=["decision_ui"]]
 visible = false
 layout_mode = 3
