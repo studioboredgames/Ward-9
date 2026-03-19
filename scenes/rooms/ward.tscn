@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/bed.fbx" id="2_bd"]
 [ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
+[ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/IV_Bag_holder.fbx" id="4_iv"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
 radius = 0.4
