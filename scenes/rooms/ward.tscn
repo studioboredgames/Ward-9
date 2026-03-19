@@ -1,9 +1,12 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=22 format=3]
 
-[ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
-[ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/bed.fbx" id="2_bd"]
-[ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/IV_Bag_holder.fbx" id="4_iv"]
+[ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/IV_Bag.fbx" id="5_ib"]
+[ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/cabinet_1.fbx" id="6_cb"]
+[ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/wheel_chair.fbx" id="7_wc"]
+[ext_resource type="Material" path="res://assets/materials/hospital_walls.tres" id="8_mw"]
+[ext_resource type="Material" path="res://assets/materials/hospital_floor.tres" id="9_mf"]
+[ext_resource type="Material" path="res://assets/materials/hospital_ceiling.tres" id="10_mc"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
 radius = 0.4
@@ -42,17 +45,20 @@ transparency = 1
 use_collision = true
 size = Vector3(12, 0.1, 10)
 material = SubResource("StandardMaterial3D_floor")
+ material = ExtResource("9_mf")
 
 [node name="Ceiling" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
 use_collision = true
 size = Vector3(12, 0.1, 10)
+material = ExtResource("10_mc")
 
 [node name="Wall_North" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
 use_collision = true
 size = Vector3(12, 3, 0.1)
 material = SubResource("StandardMaterial3D_walls")
+ material = ExtResource("8_mw")
 
 [node name="Wall_South" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
