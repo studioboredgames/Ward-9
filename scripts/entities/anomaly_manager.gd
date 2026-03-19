@@ -23,10 +23,7 @@ func _ready() -> void:
 
 ## Called by game_manager at cycle_start.
 func prepare_cycle(cycle_id: int) -> void:
-	# Clear all patients and lights first
-	for patient in _patient_nodes:
-		patient.set_anomaly_state(false)
-	
+	_reset_patients()
 	_reset_lights()
 	
 	# Decide which patient (if any) gets an anomaly this cycle
@@ -34,6 +31,16 @@ func prepare_cycle(cycle_id: int) -> void:
 	if target_patient and randf() < anomaly_chance:
 		var anomaly_data = _generate_detectable_anomaly(cycle_id)
 		_apply_anomaly(target_patient, anomaly_data)
+
+
+func cleanup_cycle(_id: int) -> void:
+	# Explicit hook for router-driven cleanup if needed
+	pass
+
+
+func _reset_patients() -> void:
+	for patient in _patient_nodes:
+		patient.set_anomaly_state(false)
 
 
 func _reset_lights() -> void:

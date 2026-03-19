@@ -1,7 +1,17 @@
 extends Node
 ## game_manager.gd
-## Responsibility: Central signal router and system connector.
+## Responsibility: Central signal router (Mediator).
+## Strictly fans out signals from sources to listeners.
 ## Stores minimal transit memory; contains NO game logic or state decisions.
+
+# ─── Signals (Fan-Out Hub) ────────────────────────────────────────────────────
+
+signal cycle_started(id: int)
+signal cycle_ended(id: int)
+signal phase_changed(name: String)
+signal decision_received(decision: String)
+signal patient_focused(patient: Node)
+signal evaluation_updated(state: String, id: int)
 
 # ─── Transit Memory ───────────────────────────────────────────────────────────
 
@@ -15,7 +25,7 @@ var last_cycle_id: int = 0
 @onready var evaluation_manager: Node = $EvaluationManager
 @onready var event_manager: Node = $EventManager
 
-# These are gathered from groups to avoid tight coupling to the scene tree structure
+# These lookup group-assigned nodes at runtime
 @onready var interaction_system: Node = get_tree().get_first_node_in_group("interaction_system")
 @onready var decision_ui: Control = get_tree().get_first_node_in_group("decision_ui")
 
@@ -26,60 +36,69 @@ func _ready() -> void:
 
 
 func _connect_signals() -> void:
-	# From phase_manager
-	phase_manager.cycle_started.connect(_on_cycle_started)
-	phase_manager.cycle_ended.connect(_on_cycle_ended)
-	phase_manager.phase_changed.connect(_on_phase_changed)
+	# 1. From phase_manager (Authority)
+	phase_manager.cycle_started_notify.connect(_on_authority_cycle_started)
+	phase_manager.cycle_ended_notify.connect(_on_authority_cycle_ended)
+	phase_manager.phase_changed_notify.connect(_on_authority_phase_changed)
 	
-	# From decision_ui
+	# 2. From decision_ui (Input)
 	if decision_ui:
-		decision_ui.decision_submitted.connect(_on_decision_submitted)
+		decision_ui.decision_submitted.connect(_on_input_decision_submitted)
 	
-	# From interaction_system
+	# 3. From interaction_system (Input)
 	if interaction_system:
-		interaction_system.decision_window_opened.connect(_on_decision_window_opened)
-
-# ─── Signal Routing (Fan-Out) ─────────────────────────────────────────────────
-
-func _on_cycle_started(cycle_id: int) -> void:
-	last_cycle_id = cycle_id
+		interaction_system.decision_window_opened.connect(_on_input_patient_focused)
+		# Systems react to the router signals
+		self.cycle_started.connect(interaction_system.enable_interaction)
+		self.cycle_ended.connect(interaction_system.disable_interaction)
 	
-	# Forward to dependent systems
-	if anomaly_manager:
-		anomaly_manager.prepare_cycle(cycle_id)
-		
-	if interaction_system:
-		interaction_system.enable()
-
-
-func _on_cycle_ended(cycle_id: int) -> void:
-	# Forward to dependent systems
-	if interaction_system:
-		interaction_system.disable()
-	
+	# 4. From evaluation_manager (Judgement)
 	if evaluation_manager:
-		evaluation_manager.log_decision(last_decision, cycle_id)
+		evaluation_manager.evaluation_updated.connect(_on_judgement_updated)
+	
+	# 5. External listeners (Anomaly, Event) connect to this router
+	self.cycle_started.connect(anomaly_manager.prepare_cycle)
+	self.cycle_ended.connect(anomaly_manager.cleanup_cycle)
+	self.phase_changed.connect(anomaly_manager.handle_phase_shift)
+	self.phase_changed.connect(event_manager.handle_phase_shift)
+	self.cycle_started.connect(event_manager.on_cycle_started)
+	self.evaluation_updated.connect(event_manager.process_evaluation)
+
+# ─── Signal Routing (Fan-In -> Fan-Out) ───────────────────────────────────────
+
+func _on_authority_cycle_started(id: int) -> void:
+	last_cycle_id = id
+	emit_signal("cycle_started", id)
 
 
-func _on_phase_changed(phase_name: String) -> void:
-	if anomaly_manager:
-		anomaly_manager.handle_phase_shift(phase_name)
-		
-	if event_manager:
-		event_manager.handle_phase_shift(phase_name)
+func _on_authority_cycle_ended(id: int) -> void:
+	emit_signal("cycle_ended", id)
 
 
-func _on_decision_window_opened(patient: Node) -> void:
-	if decision_ui:
+func _on_authority_phase_changed(name: String) -> void:
+	emit_signal("phase_changed", name)
+
+
+func _on_input_patient_focused(patient: Node) -> void:
+	if decision_ui and patient:
 		decision_ui.display_for_patient(patient)
+	emit_signal("patient_focused", patient)
 
 
-func _on_decision_submitted(decision: String) -> void:
+func _on_input_decision_submitted(decision: String) -> void:
 	last_decision = decision
 	
-	# Report back to authority to progress the game
-	phase_manager.complete_current_cycle()
+	# Timing Fix: Log/Evaluate IMMEDIATELY upon decision receipt
+	if evaluation_manager:
+		evaluation_manager.log_decision(decision, last_cycle_id)
 	
-	# Optional: acknowledge back to interaction system if needed
+	# Router notifies authorities and listeners
+	emit_signal("decision_received", decision)
+	
+	# Optional: feedback to interaction system
 	if interaction_system:
 		interaction_system.acknowledge_decision()
+
+
+func _on_judgement_updated(state: String, id: int) -> void:
+	emit_signal("evaluation_updated", state, id)

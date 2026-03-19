@@ -16,6 +16,12 @@ func _ready() -> void:
 
 # ─── Public API (Input Handlers) ──────────────────────────────────────────────
 
+## Called by game_manager router.
+func on_cycle_started(_id: int) -> void:
+	# Opportunity for per-cycle audio shifts or recurring events
+	pass
+
+
 ## Called by game_manager on phase transition.
 func handle_phase_shift(phase_name: String) -> void:
 	_current_phase = phase_name
