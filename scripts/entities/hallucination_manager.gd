@@ -139,6 +139,7 @@ func _apply_memory_desync(patient: Node) -> void:
 		patient.restore_previous_state()
 
 
+func register_real_anomaly(patient: Node, type: String) -> void:
 	# Delayed Causality: Store real anomalies for temporal echoes
 	if not _anomaly_history.has({"patient": patient, "type": type}):
 		_anomaly_history.append({"patient": patient, "type": type})

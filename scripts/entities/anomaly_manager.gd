@@ -10,6 +10,7 @@ var _last_cycle_processed: int = -1
 var _anomaly_fired_this_cycle: bool = false # HARD execution guard
 
 var _last_target: Node = null
+signal anomaly_spawned(patient: Node, type: String)
 var _target_cooldown: Dictionary = {} # Node -> float penalty
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 		_anomaly_fired_this_cycle = true
 		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name, " (Intensity: ", detail_multiplier, ")")
 		target.apply_anomaly(anomaly_type, detail_multiplier)
+		emit_signal("anomaly_spawned", target, anomaly_type)
 
 
 func cleanup_cycle(_id: int) -> void:

@@ -80,6 +80,10 @@ func _connect_signals() -> void:
 	
 	self.focus_ended.connect(anomaly_manager._on_focus_ended)
 
+	# 6. Hallucination Memory
+	if anomaly_manager and hallucination_manager:
+		anomaly_manager.anomaly_spawned.connect(hallucination_manager.register_real_anomaly)
+
 	self.decision_received.connect(phase_manager._on_decision_received)
 
 # ─── Behavior Profiling Routing ───────────────────────────────────────────────
