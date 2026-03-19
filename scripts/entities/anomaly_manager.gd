@@ -1,7 +1,7 @@
 extends Node
 ## anomaly_manager.gd
 ## Responsibility: Assign observable anomalies to patients per cycle.
-## Minimal version: 70% chance of 1 random anomaly.
+## Pattern-breaking version: Variable spawn counts (None, Single, Double).
 
 const ANOMALIES: Array[String] = ["tilt", "breath", "shift"]
 var patients: Array[Node] = []
@@ -10,7 +10,6 @@ var patients: Array[Node] = []
 
 func _ready() -> void:
 	add_to_group("anomaly_manager")
-	# Collect patients on startup
 	call_deferred("_collect_patients")
 
 
@@ -21,30 +20,54 @@ func _collect_patients() -> void:
 
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-## Called by game_manager router at start of cycle.
 func prepare_cycle(_cycle_id: int) -> void:
 	_clear_all()
+	
+	if patients.is_empty(): return
 
-	# 70% chance of anomaly per cycle
-	if randf() < 0.7 and not patients.is_empty():
-		var target_patient = patients.pick_random()
-		var anomaly_type = ANOMALIES.pick_random()
-
-		if target_patient.has_method("apply_anomaly"):
-			target_patient.apply_anomaly(anomaly_type)
+	# Pattern-Breaker Logic: Induced Uncertainty
+	var roll = randf()
+	
+	if roll < 0.60:
+		_spawn_single()
+	elif roll < 0.85:
+		_spawn_none()
+	else:
+		_spawn_double()
 
 
 func cleanup_cycle(_cycle_id: int) -> void:
-	# Optional hook, could be used for phase-down transients
 	pass
 
 
-func handle_phase_shift(_phase_name: String) -> void:
-	# Hook for future scaling
-	pass
+# ─── Internal Spawning Helpers ───────────────────────────────────────────────
+
+func _spawn_none() -> void:
+	# Intentional false negative/safe cycle
+	print("Anomaly Manager: No anomalies spawned this cycle.")
 
 
-# ─── Internal ─────────────────────────────────────────────────────────────────
+func _spawn_single() -> void:
+	var p = patients.pick_random()
+	var anomaly = ANOMALIES.pick_random()
+	if p.has_method("apply_anomaly"):
+		p.apply_anomaly(anomaly)
+	print("Anomaly Manager: Single anomaly spawned.")
+
+
+func _spawn_double() -> void:
+	var shuffled = patients.duplicate()
+	shuffled.shuffle()
+	
+	# Attempt to spawn 2, but respect patient count
+	var count = min(2, shuffled.size())
+	for i in range(count):
+		var anomaly = ANOMALIES.pick_random()
+		if shuffled[i].has_method("apply_anomaly"):
+			shuffled[i].apply_anomaly(anomaly)
+	
+	print("Anomaly Manager: Double anomaly spawned.")
+
 
 func _clear_all() -> void:
 	for p in patients:

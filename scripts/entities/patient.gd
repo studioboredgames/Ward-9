@@ -1,26 +1,36 @@
 extends CharacterBody3D
 ## patient.gd
 ## Responsibility: Authority for rendered truth of the patient (visuals).
-## Detectable, subtle, and uncomfortable anomalies.
+## Subtle, uncomfortable cues using safe transform resets.
 
 var is_anomalous: bool = false
 var anomaly_type: String = ""
 
 @onready var mesh: Node3D = get_node_or_null("MeshInstance3D")
+
+# ─── Base Transform Safety ────────────────────────────────────────────────────
+var _base_position: Vector3
+var _base_rotation: Vector3
+var _base_scale: Vector3
+
 var _breath_tween: Tween
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
 	add_to_group("patient")
-	# Interaction Layer (3)
-	collision_layer = 4 
+	collision_layer = 4 # Interaction Layer (3)
+	
+	if mesh:
+		_base_position = mesh.position
+		_base_rotation = mesh.rotation
+		_base_scale = mesh.scale
 
 
 # ─── Anomaly Control ──────────────────────────────────────────────────────────
 
 func apply_anomaly(type: String) -> void:
-	# First clear any existing to ensure clean state
+	# Defensive: Always clear before applying to prevent stacking
 	clear_anomaly()
 	
 	is_anomalous = true
@@ -28,13 +38,16 @@ func apply_anomaly(type: String) -> void:
 
 	if not mesh: return
 
+	# Tuning: Horror Heuristics (Subtle > Obvious)
 	match type:
 		"tilt":
-			mesh.rotation_degrees.z = 25.0
+			# Correct: 8-12 degrees (Subtle doubt)
+			mesh.rotation_degrees.z = _base_rotation.z + 10.0
 		"breath":
 			_start_breathing()
 		"shift":
-			mesh.position.x += 0.3
+			# Correct: 0.05-0.12 units
+			mesh.position.x = _base_position.x + 0.08
 
 
 func clear_anomaly() -> void:
@@ -46,18 +59,26 @@ func clear_anomaly() -> void:
 		_breath_tween = null
 
 	if mesh:
-		mesh.rotation = Vector3.ZERO
-		mesh.position = Vector3.ZERO
-		mesh.scale = Vector3.ONE
+		# Structural Fix: Reset to authoritative base, not 0,0,0
+		mesh.position = _base_position
+		mesh.rotation = _base_rotation
+		mesh.scale = _base_scale
 
 
 # ─── Internal Animations ──────────────────────────────────────────────────────
 
 func _start_breathing() -> void:
 	if not mesh: return
+	
+	# Defensive: Kill existing tween to prevent scale stacking
+	if _breath_tween:
+		_breath_tween.kill()
+		
 	_breath_tween = create_tween().set_loops().set_trans(Tween.TRANS_SINE)
-	_breath_tween.tween_property(mesh, "scale", Vector3(1.08, 1.08, 1.08), 1.2)
-	_breath_tween.tween_property(mesh, "scale", Vector3.ONE, 1.2)
+	# Tuning: 1.02-1.04 (Almost imperceptible)
+	var target_scale = _base_scale * 1.03
+	_breath_tween.tween_property(mesh, "scale", target_scale, 1.5)
+	_breath_tween.tween_property(mesh, "scale", _base_scale, 1.5)
 
 
 # ─── Contract for Evaluation ──────────────────────────────────────────────────

@@ -1,18 +1,19 @@
 extends Node
 ## evaluation_manager.gd
 ## Responsibility: Score player behavior and emit evaluation state.
-## Deterministic, history-aware scoring system.
+## Now includes individual decision resolution for loop feedback.
 
 signal evaluation_updated(state: String, cycle_id: int)
+signal decision_resolved(correct: bool) # For immediate player feedback
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
-@export var suspicious_threshold: float = 0.5 ## Error rate to trigger suspicion
-@export var fail_threshold: float = 0.8       ## Error rate for shift failure
+@export var suspicious_threshold: float = 0.5
+@export var fail_threshold: float = 0.8
 
 # ─── State ────────────────────────────────────────────────────────────────────
 
-var _history: Array = []  # [{cycle_id, correct: bool, patient: Node, decision: String}]
+var _history: Array = []
 var _error_count: int = 0
 var _total: int = 0
 
@@ -20,6 +21,15 @@ var _total: int = 0
 
 func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
 	var correct := _is_correct(decision, patient)
+
+	# Temporary Feedback Loop (Prints)
+	if correct:
+		print("Evaluation: [CORRECT] Player identified accurately.")
+	else:
+		print("Evaluation: [WRONG] Player missed an anomaly or false alarmed.")
+	
+	# Emit for visual/audio systems to hook into
+	emit_signal("decision_resolved", correct)
 
 	_total += 1
 	if not correct:
@@ -41,16 +51,15 @@ func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
 
 func _is_correct(decision: String, patient: Node) -> bool:
 	if patient == null:
-		# treat no target (timeout) as incorrect if an anomaly was present
-		var has_any := _any_anomalies_present()
-		return (decision == "all_normal" or decision == "no_decision") and not has_any
+		# Timeout case: correct only if NO anomalies were present in the entire ward
+		return (decision == "no_decision") and not _any_anomalies_present()
 
-	# Target patient must expose the visible anomaly flag
 	if not patient.has_method("has_visible_anomaly"):
 		return false
 
 	var has_anomaly : bool = patient.has_visible_anomaly()
 	
+	# Exact string matching for buttons: "Something Wrong" / "All Normal"
 	if decision == "Something Wrong":
 		return has_anomaly
 	if decision == "All Normal":
@@ -58,12 +67,14 @@ func _is_correct(decision: String, patient: Node) -> bool:
 		
 	return false
 
+
 func _derive_state(error_rate: float) -> String:
 	if error_rate >= fail_threshold:
 		return "failed"
 	elif error_rate >= suspicious_threshold:
 		return "suspicious"
 	return "stable"
+
 
 func _any_anomalies_present() -> bool:
 	var patients = get_tree().get_nodes_in_group("patient")
