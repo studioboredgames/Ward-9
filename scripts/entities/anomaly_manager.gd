@@ -30,8 +30,9 @@ func prepare_cycle(cycle_id: int, profile: Dictionary) -> void:
 	
 	if patients.is_empty(): return
 	if profile.is_empty(): 
-		# Fallback for first cycle
-		_spawn_single()
+		# Fallback for first cycle or unprofiled starts
+		var p = patients.pick_random()
+		p.apply_anomaly(ANOMALIES.pick_random())
 		return
 
 	# Adaptation Logic Layer
