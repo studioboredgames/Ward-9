@@ -44,6 +44,7 @@ func prepare_cycle(_cycle_id: int, profile: Dictionary) -> void:
 		await get_tree().create_timer(1.0).timeout
 
 	if target and target.has_method("apply_anomaly"):
+		print("[AnomalyManager] Triggering Adaptive Anomaly: ", anomaly_type, " on ", target.name)
 		target.apply_anomaly(anomaly_type)
 
 
@@ -69,6 +70,8 @@ func _select_adaptive_target(profile: Dictionary) -> Node:
 		
 		weights[p] = weight
 		total_weight += weight
+	
+	print("[AnomalyManager] Target Weights: ", weights)
 
 	# Weighted Random Pick
 	var roll = randf() * total_weight

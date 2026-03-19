@@ -40,8 +40,8 @@ func reset_cycle_timer() -> void:
 
 func on_focus_started(patient: Node) -> void:
 	if not focus_time_per_patient.has(patient):
-		focus_time_per_patient[patient] = 0.0
-	patient.set_meta("focus_start_time", Time.get_ticks_msec())
+		print("[Interaction] Focus Started: ", patient.name)
+		patient.set_meta("focus_start_time", Time.get_ticks_msec())
 
 
 func on_focus_ended(patient: Node) -> void:
@@ -53,6 +53,7 @@ func on_focus_ended(patient: Node) -> void:
 	
 	focus_time_per_patient[patient] += duration
 	total_focus_time += duration
+	print("[Interaction] Focus Ended: ", patient.name, " duration: ", duration, "s | Total: ", focus_time_per_patient[patient])
 	patient.remove_meta("focus_start_time")
 
 # ─── Profiling Logic ──────────────────────────────────────────────────────────
@@ -72,6 +73,7 @@ func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
 	emit_signal("decision_resolved", correct)
 	
 	var profile = _build_profile()
+	print("[Evaluation] Profile Updated: ", profile)
 	emit_signal("behavior_profile_updated", profile)
 
 	var error_rate := float(mistake_count) / float(max(total_cycles, 1))
