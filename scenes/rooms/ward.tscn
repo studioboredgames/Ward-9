@@ -97,6 +97,21 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 unit_size = 2.0
 max_db = 0.0
 
+[node name="IVStand" type="CSGCylinder3D" parent="PatientUnit_A"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.9, 0.5)
+radius = 0.02
+height = 1.8
+
+[node name="Monitor" type="CSGBox3D" parent="PatientUnit_A"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1.2, -0.5)
+size = Vector3(0.3, 0.2, 0.1)
+material = SubResource("StandardMaterial3D_monitor")
+
+[node name="Curtain" type="CSGBox3D" parent="PatientUnit_A"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 1.25, 1)
+size = Vector3(0.02, 2.5, 3)
+material = SubResource("StandardMaterial3D_curtain")
+
 [node name="BedLight" type="OmniLight3D" parent="PatientUnit_A" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 light_color = Color(1, 0.95, 0.8, 1)
@@ -125,6 +140,16 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 unit_size = 2.0
 max_db = 0.0
 
+[node name="IVStand" type="CSGCylinder3D" parent="PatientUnit_B"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.9, 0.5)
+radius = 0.02
+height = 1.8
+
+[node name="Monitor" type="CSGBox3D" parent="PatientUnit_B"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1.2, -0.5)
+size = Vector3(0.3, 0.2, 0.1)
+material = SubResource("StandardMaterial3D_monitor")
+
 [node name="BedLight" type="OmniLight3D" parent="PatientUnit_B" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
 light_color = Color(1, 0.95, 0.8, 1)
@@ -152,6 +177,21 @@ surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="PatientUnit_C/PatientC"]
 unit_size = 2.0
 max_db = 0.0
+
+[node name="IVStand" type="CSGCylinder3D" parent="PatientUnit_C"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.9, 0.5)
+radius = 0.02
+height = 1.8
+
+[node name="Monitor" type="CSGBox3D" parent="PatientUnit_C"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1.2, -0.5)
+size = Vector3(0.3, 0.2, 0.1)
+material = SubResource("StandardMaterial3D_monitor")
+
+[node name="Curtain" type="CSGBox3D" parent="PatientUnit_C"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.25, 1)
+size = Vector3(0.02, 2.5, 3)
+material = SubResource("StandardMaterial3D_curtain")
 
 [node name="BedLight" type="OmniLight3D" parent="PatientUnit_C" groups=["bed_light"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
