@@ -40,8 +40,10 @@ func reset_cycle_timer() -> void:
 
 func on_focus_started(patient: Node) -> void:
 	if not focus_time_per_patient.has(patient):
-		print("[Interaction] Focus Started: ", patient.name)
-		patient.set_meta("focus_start_time", Time.get_ticks_msec())
+		focus_time_per_patient[patient] = 0.0
+	
+	print("[Interaction] Focus Started: ", patient.name)
+	patient.set_meta("focus_start_time", Time.get_ticks_msec())
 
 
 func on_focus_ended(patient: Node) -> void:
@@ -50,6 +52,9 @@ func on_focus_ended(patient: Node) -> void:
 	
 	var start = patient.get_meta("focus_start_time")
 	var duration = (Time.get_ticks_msec() - start) / 1000.0
+	
+	if not focus_time_per_patient.has(patient):
+		focus_time_per_patient[patient] = 0.0
 	
 	focus_time_per_patient[patient] += duration
 	total_focus_time += duration
