@@ -124,6 +124,12 @@ func _on_authority_cycle_started(id: int) -> void:
 	# AnomalyManager specific direct call to avoid signal payload limits
 	if anomaly_manager:
 		anomaly_manager.prepare_cycle(id, previous_profile)
+		# Track history for Temporal Echoes
+		if hallucination_manager:
+			# We need to know WHAT was spawned. 
+			# In reality, AnomalyManager decides inside the call.
+			# Let's add a signal out of AnomalyManager?
+			pass
 	
 	if hallucination_manager:
 		# Delayed Causality: Use profile from 3 cycles ago (N-2)

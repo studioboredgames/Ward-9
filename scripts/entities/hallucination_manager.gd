@@ -75,6 +75,10 @@ func _resolve_hallucination_outcome(profile: Dictionary) -> Dictionary:
 	var types = ["perception_drift", "memory_desync", "persistence"]
 	if randf() < TEMPORAL_ECHO_CHANCE: types.append("temporal_echo")
 	
+	# 🧠 Sensory Pressure: Trigger consequences for hesitation
+	if hesitation > 4.0:
+		_apply_sensory_pressure()
+	
 	return {
 		"type": types.pick_random(),
 		"patient": patients.pick_random() if not patients.is_empty() else null
@@ -98,6 +102,10 @@ func _execute_hallucination(outcome: Dictionary) -> void:
 			_apply_fake_persistence(outcome.patient)
 		"temporal_echo":
 			_apply_temporal_echo(outcome.patient)
+		"ui_betrayal":
+			_apply_ui_betrayal()
+		"identity_drift":
+			_apply_identity_drift(outcome.patient)
 
 
 # ─── Specific Effects ─────────────────────────────────────────────────────────
@@ -132,9 +140,9 @@ func _apply_memory_desync(patient: Node) -> void:
 
 
 	# Delayed Causality: Store real anomalies for temporal echoes
-	# GameManager should notify us of real anomalies or we sniff them
-	# For now, we'll assume a signal or direct call
-	pass
+	if not _anomaly_history.has({"patient": patient, "type": type}):
+		_anomaly_history.append({"patient": patient, "type": type})
+		if _anomaly_history.size() > 5: _anomaly_history.pop_front()
 
 
 func _apply_fake_persistence(patient: Node) -> void:
@@ -156,3 +164,37 @@ func _apply_temporal_echo(patient: Node) -> void:
 	if patient.has_method("apply_anomaly"):
 		print("[Hallucination] Temporal Echo: Replaying ", old.type, " on ", patient.name)
 		patient.apply_anomaly(old.type)
+
+
+func _apply_ui_betrayal() -> void:
+	# UI Flickers or input lag
+	var ui = get_tree().get_first_node_in_group("decision_ui")
+	if not ui: return
+	
+	print("[Hallucination] UI Betrayal: Injecting perceptual lag")
+	if randf() < 0.5:
+		# Visible flicker
+		ui.modulate.a = 0.5
+		await get_tree().create_timer(0.1).timeout
+		ui.modulate.a = 1.0
+	else:
+		# Shadow delay (implemented via game_manager or locally)
+		pass
+
+
+func _apply_identity_drift(patient: Node) -> void:
+	# Subtly shift baseline position permanently (barely noticeable)
+	if not patient.has_method("get"): return
+	var mesh = patient.get("mesh")
+	if not mesh: return
+	
+	print("[Hallucination] Identity Drift: Shifting baseline for ", patient.name)
+	mesh.position.y += randf_range(-0.005, 0.005)
+
+
+func _apply_sensory_pressure() -> void:
+	# Distant sounds or lighting pulses
+	var events = get_tree().get_first_node_in_group("event_manager")
+	if events and events.has_method("_trigger_environmental_event"):
+		print("[Hallucination] Sensory Pressure: Triggering atmospheric event")
+		events.call_deferred("_trigger_environmental_event")
