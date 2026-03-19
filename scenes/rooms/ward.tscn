@@ -1,5 +1,8 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=25 format=3]
 
+[ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
+[ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/bed.fbx" id="2_bd"]
+[ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/IV_Bag_holder.fbx" id="4_iv"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/IV_Bag.fbx" id="5_ib"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/FBX/cabinet_1.fbx" id="6_cb"]
@@ -19,16 +22,6 @@ height = 1.8
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_patient"]
 albedo_color = Color(0.8, 0.8, 0.9, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.6, 0.62, 0.65, 1)
-metallic = 0.2
-roughness = 0.1
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_walls"]
-albedo_color = Color(0.85, 0.87, 0.9, 1)
-metallic = 0.1
-roughness = 0.8
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_monitor"]
 albedo_color = Color(0, 0, 0, 1)
 emission_enabled = true
@@ -44,8 +37,7 @@ transparency = 1
 [node name="Floor" type="CSGBox3D" parent="."]
 use_collision = true
 size = Vector3(12, 0.1, 10)
-material = SubResource("StandardMaterial3D_floor")
- material = ExtResource("9_mf")
+material = ExtResource("9_mf")
 
 [node name="Ceiling" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
@@ -57,14 +49,13 @@ material = ExtResource("10_mc")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
 use_collision = true
 size = Vector3(12, 3, 0.1)
-material = SubResource("StandardMaterial3D_walls")
- material = ExtResource("8_mw")
+material = ExtResource("8_mw")
 
 [node name="Wall_South" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
 use_collision = true
 size = Vector3(12, 3, 0.1)
-material = SubResource("StandardMaterial3D_walls")
+material = ExtResource("8_mw")
 
 [node name="Door_Hallway" type="CSGBox3D" parent="Wall_South"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, 0)
