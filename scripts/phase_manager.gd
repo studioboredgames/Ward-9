@@ -11,6 +11,7 @@ signal phase_changed_notify(name: String)
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
+const CYCLES_PER_PHASE: int = 3
 const PHASES: Array[String] = ["shift_start", "midnight", "pre_dawn"]
 const CYCLE_TIMEOUT: float = 30.0 ## Seconds before auto-completing cycle
 
