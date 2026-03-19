@@ -1,8 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://ward"]
+[gd_scene load_steps=14 format=3 uid="uid://ward"]
 
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
 [ext_resource type="PackedScene" uid="uid://bed" path="res://scenes/props/bed.tscn" id="2_bd"]
 [ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
+
+[ext_resource type="Texture2D" uid="uid://hz" path="res://images/horizontal.png" id="4_hz"]
+[ext_resource type="Texture2D" uid="uid://vt" path="res://images/vertical.png" id="5_vt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
 radius = 0.4
@@ -16,15 +19,16 @@ height = 1.8
 albedo_color = Color(0.8, 0.8, 0.9, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_color = Color(0.7, 0.72, 0.75, 1)
+albedo_texture = ExtResource("5_vt")
+uv1_scale = Vector3(4, 4, 4)
 metallic = 0.2
 roughness = 0.1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_walls"]
-albedo_color = Color(0.9, 0.92, 0.95, 1)
+albedo_texture = ExtResource("4_hz")
+uv1_scale = Vector3(2, 2, 2)
 metallic = 0.1
 roughness = 0.8
-uv1_scale = Vector3(10, 10, 10)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_monitor"]
 albedo_color = Color(0, 0, 0, 1)
