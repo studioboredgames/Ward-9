@@ -1,6 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://ward"]
+[gd_scene load_steps=8 format=3 uid="uid://ward"]
 
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
+[ext_resource type="PackedScene" uid="uid://bed" path="res://scenes/props/bed.tscn" id="2_bd"]
+[ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
 radius = 0.4
@@ -17,57 +19,113 @@ albedo_color = Color(0.8, 0.8, 0.9, 1)
 
 [node name="Floor" type="CSGBox3D" parent="."]
 use_collision = true
-size = Vector3(10, 0.1, 10)
+size = Vector3(12, 0.1, 10)
 
-[node name="PatientA" type="CharacterBody3D" parent="." groups=["patient"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -2)
+[node name="Ceiling" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+use_collision = true
+size = Vector3(12, 0.1, 10)
+
+[node name="Wall_North" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
+use_collision = true
+size = Vector3(12, 3, 0.1)
+
+[node name="Wall_South" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
+use_collision = true
+size = Vector3(12, 3, 0.1)
+
+[node name="Wall_West" type="CSGBox3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -6, 1.5, 0)
+use_collision = true
+size = Vector3(10, 3, 0.1)
+
+[node name="Wall_East" type="CSGBox3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 6, 1.5, 0)
+use_collision = true
+size = Vector3(10, 3, 0.1)
+
+[node name="PatientUnit_A" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -3)
+
+[node name="Bed" parent="PatientUnit_A" instance=ExtResource("2_bd")]
+
+[node name="PatientA" type="CharacterBody3D" parent="PatientUnit_A" groups=["patient"]]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.8, -0.2)
 collision_layer = 4
 script = ExtResource("1_pt")
 patient_name = "Patient A"
 bed_id = 1
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientUnit_A/PatientA"]
 shape = SubResource("CapsuleShape3D_pt")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientUnit_A/PatientA"]
 mesh = SubResource("CapsuleMesh_pt")
 surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 
-[node name="PatientB" type="CharacterBody3D" parent="." groups=["patient"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2)
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="PatientUnit_A/PatientA"]
+unit_size = 2.0
+max_db = 0.0
+
+[node name="BedLight" type="OmniLight3D" parent="PatientUnit_A"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.95, 0.8, 1)
+script = ExtResource("3_fl")
+
+[node name="PatientUnit_B" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+
+[node name="Bed" parent="PatientUnit_B" instance=ExtResource("2_bd")]
+
+[node name="PatientB" type="CharacterBody3D" parent="PatientUnit_B" groups=["patient"]]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.8, -0.2)
 collision_layer = 4
 script = ExtResource("1_pt")
 patient_name = "Patient B"
 bed_id = 2
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientUnit_B/PatientB"]
 shape = SubResource("CapsuleShape3D_pt")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientUnit_B/PatientB"]
 mesh = SubResource("CapsuleMesh_pt")
 surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 
-[node name="PatientC" type="CharacterBody3D" parent="." groups=["patient"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -2)
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="PatientUnit_B/PatientB"]
+unit_size = 2.0
+max_db = 0.0
+
+[node name="BedLight" type="OmniLight3D" parent="PatientUnit_B"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.95, 0.8, 1)
+script = ExtResource("3_fl")
+
+[node name="PatientUnit_C" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -3)
+
+[node name="Bed" parent="PatientUnit_C" instance=ExtResource("2_bd")]
+
+[node name="PatientC" type="CharacterBody3D" parent="PatientUnit_C" groups=["patient"]]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.8, -0.2)
 collision_layer = 4
 script = ExtResource("1_pt")
 patient_name = "Patient C"
 bed_id = 3
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientC"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PatientUnit_C/PatientC"]
 shape = SubResource("CapsuleShape3D_pt")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientC"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PatientUnit_C/PatientC"]
 mesh = SubResource("CapsuleMesh_pt")
 surface_material_override/0 = SubResource("StandardMaterial3D_pt")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 0)
-light_energy = 0.5
-shadow_enabled = true
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="PatientUnit_C/PatientC"]
+unit_size = 2.0
+max_db = 0.0
+
+[node name="BedLight" type="OmniLight3D" parent="PatientUnit_C"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+light_color = Color(1, 0.95, 0.8, 1)
+script = ExtResource("3_fl")

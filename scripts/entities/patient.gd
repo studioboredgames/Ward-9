@@ -42,14 +42,32 @@ func set_anomaly_state(anomalous: bool, anomaly_data: Dictionary = {}) -> void:
 
 
 func _apply_anomaly_effects() -> void:
-	# Logic to change model, visibility, or play sounds
-	# Example: $AnimationPlayer.play(_current_anomaly_data.get("anim", "idle"))
-	pass
+	# 1. Posture Distortion (Subtle rotation shift)
+	if _current_anomaly_data.get("type") == "posture":
+		# Rotate the mesh in an unnatural way
+		var mesh = get_node_or_null("MeshInstance3D")
+		if mesh:
+			mesh.rotation_degrees.z = 15.0 # Unnatural tilt
+			mesh.rotation_degrees.x = -5.0
+	
+	# 2. Sound Anomaly
+	if _current_anomaly_data.get("type") == "sound":
+		# Play whisper loop on child AudioStreamPlayer3D
+		var audio = get_node_or_null("AudioStreamPlayer3D")
+		if audio:
+			audio.play()
 
 
 func _clear_anomaly_effects() -> void:
-	# Restore to normal state
-	pass
+	# Reset visuals
+	var mesh = get_node_or_null("MeshInstance3D")
+	if mesh:
+		mesh.rotation_degrees = Vector3.ZERO
+	
+	# Stop audio
+	var audio = get_node_or_null("AudioStreamPlayer3D")
+	if audio:
+		audio.stop()
 
 # ─── Query API ───────────────────────────────────────────────────────────────
 
