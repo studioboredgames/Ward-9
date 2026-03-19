@@ -9,6 +9,13 @@
 [ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="7_pc"]
 [ext_resource type="Script" path="res://scripts/player/interaction_system.gd" id="8_is"]
 [ext_resource type="PackedScene" uid="uid://ward" path="res://scenes/rooms/ward.tscn" id="9_wd"]
+[ext_resource type="Script" path="res://scripts/entities/psychological_director.gd" id="10_pd"]
+[ext_resource type="Script" path="res://scripts/entities/hallucination_manager.gd" id="11_hm"]
+[ext_resource type="Script" path="res://scripts/entities/behavior_analyzer.gd" id="12_ba"]
+[ext_resource type="Script" path="res://scripts/entities/truth_instability.gd" id="13_ti"]
+[ext_resource type="Script" path="res://scripts/entities/reality_distorter.gd" id="14_rd"]
+[ext_resource type="Script" path="res://scripts/entities/player_model.gd" id="15_plm"]
+[ext_resource type="Script" path="res://scripts/entities/input_distorter.gd" id="16_id"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pl"]
 radius = 0.4
@@ -28,6 +35,27 @@ script = ExtResource("4_em")
 
 [node name="EventManager" type="Node" parent="."]
 script = ExtResource("5_ev")
+
+[node name="PsychologicalDirector" type="Node" parent="."]
+script = ExtResource("10_pd")
+
+[node name="HallucinationManager" type="Node" parent="."]
+script = ExtResource("11_hm")
+
+[node name="BehaviorAnalyzer" type="Node" parent="."]
+script = ExtResource("12_ba")
+
+[node name="TruthInstability" type="Node" parent="."]
+script = ExtResource("13_ti")
+
+[node name="RealityDistorter" type="Node" parent="."]
+script = ExtResource("14_rd")
+
+[node name="PlayerModel" type="Node" parent="."]
+script = ExtResource("15_plm")
+
+[node name="InputDistorter" type="Node" parent="."]
+script = ExtResource("16_id")
 
 [node name="AmbientPlayer" type="AudioStreamPlayer" parent="."]
 volume_db = -15.0
