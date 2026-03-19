@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/bed.fbx" id="2_bd"]
@@ -142,10 +142,8 @@ surface_material_override/0 = SubResource("StandardMaterial3D_patient")
 unit_size = 2.0
 max_db = 0.0
 
-[node name="IVStand" type="CSGCylinder3D" parent="PatientUnit_B"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.9, 0.5)
-radius = 0.02
-height = 1.8
+[node name="IVStand" parent="PatientUnit_B" instance=ExtResource("4_iv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0.5)
 
 [node name="Monitor" type="CSGBox3D" parent="PatientUnit_B"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1.2, -0.5)
@@ -180,10 +178,8 @@ surface_material_override/0 = SubResource("StandardMaterial3D_patient")
 unit_size = 2.0
 max_db = 0.0
 
-[node name="IVStand" type="CSGCylinder3D" parent="PatientUnit_C"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.9, 0.5)
-radius = 0.02
-height = 1.8
+[node name="IVStand" parent="PatientUnit_C" instance=ExtResource("4_iv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0.5)
 
 [node name="Monitor" type="CSGBox3D" parent="PatientUnit_C"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1.2, -0.5)
