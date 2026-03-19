@@ -1,0 +1,71 @@
+[gd_scene load_steps=9 format=3 uid="uid://main"]
+
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
+[ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
+[ext_resource type="Script" path="res://scripts/entities/anomaly_manager.gd" id="3_am"]
+[ext_resource type="Script" path="res://scripts/entities/evaluation_manager.gd" id="4_em"]
+[ext_resource type="Script" path="res://scripts/systems/event_manager.gd" id="5_ev"]
+[ext_resource type="Script" path="res://scripts/ui/decision_ui.gd" id="6_ui"]
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="7_pc"]
+[ext_resource type="Script" path="res://scripts/player/interaction_system.gd" id="8_is"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_gm")
+
+[node name="PhaseManager" type="Node" parent="."]
+script = ExtResource("2_pm")
+
+[node name="AnomalyManager" type="Node" parent="."]
+script = ExtResource("3_am")
+
+[node name="EvaluationManager" type="Node" parent="."]
+script = ExtResource("4_em")
+
+[node name="EventManager" type="Node" parent="."]
+script = ExtResource("5_ev")
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="DecisionUI" type="Control" parent="CanvasLayer" groups=["decision_ui"]]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6_ui")
+
+[node name="PromptContainer" type="VBoxContainer" parent="CanvasLayer/DecisionUI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -50.0
+offset_right = 100.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AnomalyButton" type="Button" parent="CanvasLayer/DecisionUI/PromptContainer"]
+layout_mode = 2
+text = "Something Wrong"
+
+[node name="NormalButton" type="Button" parent="CanvasLayer/DecisionUI/PromptContainer"]
+layout_mode = 2
+text = "All Normal"
+
+[node name="Player" type="CharacterBody3D" parent="World" groups=["player"]]
+script = ExtResource("7_pc")
+
+[node name="Camera3D" type="Camera3D" parent="World/Player" groups=["player_camera"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
+
+[node name="InteractionSystem" type="Node" parent="World/Player" groups=["interaction_system"]]
+script = ExtResource("8_is")
+camera_path = NodePath("../Camera3D")
