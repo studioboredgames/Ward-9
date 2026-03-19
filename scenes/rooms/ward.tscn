@@ -200,7 +200,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)
 [node name="Hall_Floor" type="CSGBox3D" parent="Ward_Hallway"]
 use_collision = true
 size = Vector3(3, 0.1, 10)
-material = SubResource("StandardMaterial3D_floor")
+material = ExtResource("9_mf")
 
 [node name="Hall_Wall_L" type="CSGBox3D" parent="Ward_Hallway"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 1.5, 0)
@@ -230,7 +230,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 17)
 [node name="Staff_Floor" type="CSGBox3D" parent="Ward_StaffRoom"]
 use_collision = true
 size = Vector3(4, 0.1, 4)
-material = SubResource("StandardMaterial3D_floor")
+material = ExtResource("9_mf")
 
 [node name="Staff_Wall_N" type="CSGBox3D" parent="Ward_StaffRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -2)
@@ -245,7 +245,7 @@ size = Vector3(1.2, 2.2, 0.2)
 [node name="Desk" type="CSGBox3D" parent="Ward_StaffRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 1)
 size = Vector3(1.5, 0.8, 0.6)
-material = SubResource("StandardMaterial3D_patient")
+material = ExtResource("8_mw")
 
 [node name="StaffLight" type="OmniLight3D" parent="Ward_StaffRoom"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
