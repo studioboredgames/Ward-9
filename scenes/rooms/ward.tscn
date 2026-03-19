@@ -1,10 +1,8 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
 [ext_resource type="PackedScene" path="res://assets/models/hospital/bed.fbx" id="2_bd"]
 [ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
-[ext_resource type="Texture2D" path="res://images/horizontal.png" id="4_hz"]
-[ext_resource type="Texture2D" path="res://images/vertical.png" id="5_vt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
 radius = 0.4
@@ -18,14 +16,12 @@ height = 1.8
 albedo_color = Color(0.8, 0.8, 0.9, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor"]
-albedo_texture = ExtResource("5_vt")
-uv1_scale = Vector3(4, 4, 4)
+albedo_color = Color(0.6, 0.62, 0.65, 1)
 metallic = 0.2
 roughness = 0.1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_walls"]
-albedo_texture = ExtResource("4_hz")
-uv1_scale = Vector3(2, 2, 2)
+albedo_color = Color(0.85, 0.87, 0.9, 1)
 metallic = 0.1
 roughness = 0.8
 
