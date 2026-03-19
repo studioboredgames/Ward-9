@@ -17,6 +17,11 @@ var _history: Array = []
 var _error_count: int = 0
 var _total: int = 0
 
+# ─── Lifecycle ────────────────────────────────────────────────────────────
+
+func _ready() -> void:
+	add_to_group("evaluation_manager")
+
 # ─── Public API ───────────────────────────────────────────────────────────────
 
 func log_decision(decision: String, cycle_id: int, patient: Node) -> void:
