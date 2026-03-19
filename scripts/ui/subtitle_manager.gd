@@ -4,13 +4,14 @@ extends CanvasLayer
 ## inspired by "Fears to Fathom"
 
 @onready var label: RichTextLabel = $SubtitleLabel
+var enabled: bool = true
 
 func _ready() -> void:
 	add_to_group("subtitle_manager")
 	if label: label.text = ""
 
 func display_text(text: String, duration: float = 3.0) -> void:
-	if not label: return
+	if not label or not enabled: return
 	
 	label.text = "[center]" + text + "[/center]"
 	label.visible_ratio = 0.0

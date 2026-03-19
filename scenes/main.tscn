@@ -193,6 +193,10 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "PLAY"
 
+[node name="SettingsButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
+layout_mode = 2
+text = "SUBTITLES: ON"
+
 [node name="DiscordButton" type="Button" parent="CanvasLayer/MainMenu/VBoxContainer"]
 layout_mode = 2
 text = "DISCORD"
