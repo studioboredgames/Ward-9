@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://xjtohqired0w"
+path="res://.godot/imported/lamp_standing.obj-a7a17f1b7619f931ffc4fbd4b79409eb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/lamp_standing.obj-a7a17f1b7619f931ffc4fbd4b79409eb.mesh"]
+
+source_file="res://assets/models/furniture/KayKit-Furniture-Bits-1.0-96d5930a8dbdb363409bbc2d3341718b00e17c9c/addons/kaykit_furniture_bits/Assets/obj/lamp_standing.obj"
+dest_files=["res://.godot/imported/lamp_standing.obj-a7a17f1b7619f931ffc4fbd4b79409eb.mesh", "res://.godot/imported/lamp_standing.obj-a7a17f1b7619f931ffc4fbd4b79409eb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

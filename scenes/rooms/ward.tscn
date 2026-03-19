@@ -1,11 +1,10 @@
 [gd_scene load_steps=14 format=3 uid="uid://ward"]
 
 [ext_resource type="Script" path="res://scripts/entities/patient.gd" id="1_pt"]
-[ext_resource type="PackedScene" uid="uid://bed" path="res://scenes/props/bed.tscn" id="2_bd"]
+[ext_resource type="PackedScene" path="res://scenes/props/bed.tscn" id="2_bd"]
 [ext_resource type="Script" path="res://scripts/systems/light_flicker.gd" id="3_fl"]
-
-[ext_resource type="Texture2D" uid="uid://hz" path="res://images/horizontal.png" id="4_hz"]
-[ext_resource type="Texture2D" uid="uid://vt" path="res://images/vertical.png" id="5_vt"]
+[ext_resource type="Texture2D" path="res://images/horizontal.png" id="4_hz"]
+[ext_resource type="Texture2D" path="res://images/vertical.png" id="5_vt"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pt"]
 radius = 0.4
