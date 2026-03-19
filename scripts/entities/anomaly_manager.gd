@@ -23,16 +23,24 @@ func _ready() -> void:
 
 ## Called by game_manager at cycle_start.
 func prepare_cycle(cycle_id: int) -> void:
-	# Clear all patients first
+	# Clear all patients and lights first
 	for patient in _patient_nodes:
 		patient.set_anomaly_state(false)
 	
+	_reset_lights()
+	
 	# Decide which patient (if any) gets an anomaly this cycle
-	# In early phases, maybe only 1. In late phases, maybe more.
 	var target_patient = _select_random_patient()
 	if target_patient and randf() < anomaly_chance:
 		var anomaly_data = _generate_detectable_anomaly(cycle_id)
-		target_patient.set_anomaly_state(true, anomaly_data)
+		_apply_anomaly(target_patient, anomaly_data)
+
+
+func _reset_lights() -> void:
+	var lights = get_tree().get_nodes_in_group("bed_light")
+	for light in lights:
+		if light.has_method("set_flicker_enabled"):
+			light.set_flicker_enabled(false)
 
 
 func handle_phase_shift(phase_name: String) -> void:
@@ -57,14 +65,28 @@ func _select_random_patient() -> Node:
 
 func _generate_detectable_anomaly(cycle_id: int) -> Dictionary:
 	# Define a set of detectable anomalies
-	# Every anomaly MUST have a player-observable cue (visual/audio)
 	var anomalies = [
-		{"type": "posture", "cue": "unnatural_bend", "intensity": 1.0},
-		{"type": "sound", "cue": "whispering", "volume": -10.0},
-		{"type": "visual", "cue": "eye_color_shift", "color": Color.RED},
-		{"type": "behavior", "cue": "rhythmic_tapping", "speed": 2.0}
+		{"type": "posture", "cue": "unnatural_bend"},
+		{"type": "sound", "cue": "whispering"},
+		{"type": "flicker", "cue": "light_unstable"}
 	]
 	
 	var selected = anomalies.pick_random()
 	selected["cycle_id"] = cycle_id
 	return selected
+
+
+func _apply_anomaly(patient: Node, data: Dictionary) -> void:
+	match data.get("type"):
+		"flicker":
+			# Find the light in the same "PatientUnit" parent
+			var parent = patient.get_parent()
+			if parent:
+				var light = parent.get_node_or_null("BedLight")
+				if light and light.has_method("set_flicker_enabled"):
+					light.set_flicker_enabled(true)
+			# Even for flicker, we mark the patient as "anomalous" 
+			# but they might not have a visual mesh shift.
+			patient.set_anomaly_state(true, data)
+		_:
+			patient.set_anomaly_state(true, data)

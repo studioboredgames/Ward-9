@@ -5,6 +5,7 @@ extends Node
 
 # ─── Private State ────────────────────────────────────────────────────────────
 
+@onready var _ambient_hum: AudioStreamPlayer = get_node_or_null("../AmbientPlayer")
 var _current_evaluation: String = "stable"
 var _current_phase: String = "shift_start"
 

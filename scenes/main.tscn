@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://main"]
+[gd_scene load_steps=10 format=3 uid="uid://main"]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
@@ -28,6 +28,10 @@ script = ExtResource("4_em")
 
 [node name="EventManager" type="Node" parent="."]
 script = ExtResource("5_ev")
+
+[node name="AmbientPlayer" type="AudioStreamPlayer" parent="."]
+volume_db = -15.0
+autoplay = true
 
 [node name="World" type="Node3D" parent="."]
 
