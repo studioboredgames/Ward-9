@@ -8,6 +8,7 @@ extends Node
 const SILENCE_RATIO = 0.4
 const HALLUCINATION_CHANCE = 0.25
 const TEMPORAL_ECHO_CHANCE = 0.15
+const UI_GLITCH_CHANCE = 0.1
 var _ui_lag_active: bool = false
 
 # ─── Private State ────────────────────────────────────────────────────────────
@@ -78,8 +79,12 @@ func _resolve_hallucination_outcome(profile: Dictionary) -> Dictionary:
 		return {"type": "none"}
 	
 	# Select type based on behavior
+	if randf() < UI_GLITCH_CHANCE:
+		return {"type": "ui_betrayal", "patient": null}
+		
 	var types = ["perception_drift", "memory_desync", "persistence"]
 	if randf() < TEMPORAL_ECHO_CHANCE: types.append("temporal_echo")
+	if randf() < 0.15: types.append("identity_drift")
 	
 	# 🧠 Sensory Pressure: Trigger consequences for hesitation
 	if hesitation > 4.0:
