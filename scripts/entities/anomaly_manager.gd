@@ -100,6 +100,12 @@ func _run_adaptive_cycle(profile: Dictionary) -> void:
 	var phase_manager = get_tree().get_first_node_in_group("phase_manager")
 	if phase_manager:
 		var time_remaining = phase_manager.get_time_remaining()
+		# 🧠 Fast Player Punishment: Delay anomalies for speed-runners
+		if not force_real and profile.get("avg_decision_time", 5.0) < 3.0:
+			if randf() < 0.6:
+				print("[AnomalyManager] Speed-runner detected. Forcing long delay.")
+				return
+
 		# If early in cycle (more than 5s left), 40% chance to skip/delay
 		# force_real bypasses the delay
 		if not force_real and time_remaining > 5.0 and randf() < 0.4:

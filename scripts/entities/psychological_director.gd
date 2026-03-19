@@ -34,6 +34,7 @@ func _collect_patients() -> void:
 func register_cycle(cycle_id: int) -> void:
 	current_cycle = cycle_id
 	distortion_active = false
+	_check_consequence_queue()
 	print("[Director] New Cycle Registered: ", cycle_id)
 
 
