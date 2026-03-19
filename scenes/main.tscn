@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://main"]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
@@ -18,7 +18,7 @@
 [ext_resource type="Script" path="res://scripts/entities/input_distorter.gd" id="16_id"]
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="17_mm"]
 [ext_resource type="Script" path="res://scripts/ui/subtitle_manager.gd" id="18_sm"]
-[ext_resource type="Texture2D" uid="uid://hs" path="res://images/homescreen.png" id="19_hs"]
+[ext_resource type="Texture2D" path="res://images/homescreen.png" id="19_hs"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_pl"]
 radius = 0.4
