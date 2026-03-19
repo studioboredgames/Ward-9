@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://main"]
+[gd_scene load_steps=20 format=3 uid="uid://main"]
 
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="1_gm"]
 [ext_resource type="Script" path="res://scripts/phase_manager.gd" id="2_pm"]
