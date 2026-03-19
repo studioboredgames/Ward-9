@@ -1,56 +1,66 @@
 extends CharacterBody3D
 ## patient.gd
-## Responsibility: Target for observation and display of anomaly states.
-## Satisfies the display contract for anomaly_manager and evaluation_manager.
+## Responsibility: Authority for rendered truth of the patient (visuals).
+## Detectable, subtle, and uncomfortable anomalies.
 
-@export var patient_name: String = "Patient"
-@export var bed_id: int = 0
+var is_anomalous: bool = false
+var anomaly_type: String = ""
 
-var _is_anomalous: bool = false
-var _current_data: Dictionary = {}
+@onready var mesh: Node3D = get_node_or_null("MeshInstance3D")
+var _breath_tween: Tween
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 func _ready() -> void:
 	add_to_group("patient")
-	collision_layer = 4 # Layer 3 for interaction_system
-
-# ─── Anomaly Contract ─────────────────────────────────────────────────────────
-
-func has_visible_anomaly() -> bool:
-	return _is_anomalous
+	# Interaction Layer (3)
+	collision_layer = 4 
 
 
-func set_anomaly_state(data: Dictionary) -> void:
-	_is_anomalous = true
-	_current_data = data
-	_update_visuals()
+# ─── Anomaly Control ──────────────────────────────────────────────────────────
+
+func apply_anomaly(type: String) -> void:
+	# First clear any existing to ensure clean state
+	clear_anomaly()
+	
+	is_anomalous = true
+	anomaly_type = type
+
+	if not mesh: return
+
+	match type:
+		"tilt":
+			mesh.rotation_degrees.z = 25.0
+		"breath":
+			_start_breathing()
+		"shift":
+			mesh.position.x += 0.3
 
 
 func clear_anomaly() -> void:
-	_is_anomalous = false
-	_current_data = {}
-	_update_visuals()
+	is_anomalous = false
+	anomaly_type = ""
 
-# ─── Internal Visuals ─────────────────────────────────────────────────────────
+	if _breath_tween:
+		_breath_tween.kill()
+		_breath_tween = null
 
-func _update_visuals() -> void:
-	var mesh = get_node_or_null("MeshInstance3D")
+	if mesh:
+		mesh.rotation = Vector3.ZERO
+		mesh.position = Vector3.ZERO
+		mesh.scale = Vector3.ONE
+
+
+# ─── Internal Animations ──────────────────────────────────────────────────────
+
+func _start_breathing() -> void:
 	if not mesh: return
+	_breath_tween = create_tween().set_loops().set_trans(Tween.TRANS_SINE)
+	_breath_tween.tween_property(mesh, "scale", Vector3(1.08, 1.08, 1.08), 1.2)
+	_breath_tween.tween_property(mesh, "scale", Vector3.ONE, 1.2)
 
-	if not _is_anomalous:
-		mesh.rotation_degrees = Vector3.ZERO
-		mesh.scale = Vector3(1, 1, 1)
-		return
 
-	# Apply anomaly based on variant/intensity
-	var variant = _current_data.get("variant", 0)
-	var intensity = _current_data.get("intensity", 0.3)
+# ─── Contract for Evaluation ──────────────────────────────────────────────────
 
-	match variant:
-		0: # Posture Distortion
-			mesh.rotation_degrees.z = 15.0 * intensity
-		1: # Size distortion
-			mesh.scale.x = 1.0 + (0.2 * intensity)
-		2: # Floating
-			mesh.position.y = 0.8 + (0.1 * intensity)
+func has_visible_anomaly() -> bool:
+	return is_anomalous
