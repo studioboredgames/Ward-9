@@ -22,6 +22,7 @@ var _jitter_cooldown: float = 0.0
 var _state_history: Array = []
 const HISTORY_LIMIT := 5
 var _is_lingering: bool = false
+var _is_eye_lagging: bool = false
 
 # ─── Lifecycle ────────────────────────────────────────────────────────────────
 
@@ -39,28 +40,37 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_process_micro_jitter(delta)
+	if _is_eye_lagging:
+		_process_eye_lag()
+	_process_breathing(delta)
 
 
 # ─── Anomaly Control ──────────────────────────────────────────────────────────
 
-func apply_anomaly(type: String, intensity_mult: float = 1.0) -> void:
+func apply_anomaly(type: String, intensity: float = 1.0) -> void:
 	clear_anomaly() # Fresh start
 	
 	is_anomalous = true
 	anomaly_type = type
+	current_anomaly = type
+	_anomaly_intensity = intensity
 
 	if not mesh: return
 
 	# Tuning: Horror Heuristics (Subtle doubt)
 	match type:
 		"tilt":
-			# Correct: 8-12 degrees, scaled by intensity
-			mesh.rotation_degrees.z = _base_rotation.z + (randf_range(8.0, 12.0) * intensity_mult)
+			if mesh: mesh.rotation_degrees.z = 15.0 * intensity
 		"breath":
-			_start_breathing(intensity_mult)
+			# Handled in _process
+			pass
 		"shift":
-			# Correct: 0.04 - 0.12 units, scaled by intensity
-			mesh.position.x = _base_position.x + (randf_range(0.04, 0.12) * intensity_mult)
+			if mesh: mesh.position.x += 0.05 * intensity
+		"eye_lag":
+			_is_eye_lagging = true
+		"posture":
+			if mesh: mesh.scale.y = 0.9 * intensity
+			mesh.rotation_degrees.z = _base_rotation.z + (randf_range(8.0, 12.0) * intensity) # Corrected intensity_mult to intensity
 	
 	_record_state()
 
@@ -73,6 +83,8 @@ func clear_anomaly(is_unreliable: bool = false) -> void:
 		
 	is_anomalous = false
 	anomaly_type = ""
+	current_anomaly = "" # Clear current anomaly type
+	_is_eye_lagging = false # Clear eye lag
 
 	if _breath_tween:
 		_breath_tween.kill()
@@ -118,16 +130,9 @@ func _apply_micro_jitter() -> void:
 
 
 func _start_breathing(intensity_mult: float = 1.0) -> void:
-	if not mesh: return
-	if _breath_tween: _breath_tween.kill()
-		
-	_breath_tween = create_tween().set_loops().set_trans(Tween.TRANS_SINE)
-	# Tuning: 1.02-1.04 (Almost imperceptible), scaled by intensity
-	var breath_intensity = 1.0 + ((randf_range(1.02, 1.04) - 1.0) * intensity_mult)
-	var breath_speed = randf_range(1.4, 2.0)
-	
-	_breath_tween.tween_property(mesh, "scale", _base_scale * breath_intensity, breath_speed)
-	_breath_tween.tween_property(mesh, "scale", _base_scale, breath_speed)
+	# This function is now deprecated as breathing is handled in _process_breathing
+	# Keeping it for now in case it's still called elsewhere, but it won't do anything.
+	pass
 
 
 func has_visible_anomaly() -> bool:
@@ -147,6 +152,23 @@ func restore_previous_state() -> void:
 	mesh.scale = state.scale
 	print("[Patient] Memory Violation: Restored historical state for ", name)
 
+
+func _process_breathing(delta: float) -> void:
+	if not mesh: return
+	
+	var speed = 2.0
+	if current_anomaly == "breath":
+		speed = 8.0 * _anomaly_intensity # Unnatural breathing desync
+	
+	_breath_time += delta * speed
+	mesh.scale.y = 1.0 + (sin(_breath_time) * 0.01)
+
+func _process_eye_lag() -> void:
+	# Subtle eye/head lag: looks at player but with huge smoothing
+	var player = get_tree().get_first_node_in_group("player")
+	if player and mesh:
+		var target_rot = mesh.global_transform.looking_at(player.global_position).basis.get_euler()
+		mesh.rotation.y = lerp_angle(mesh.rotation.y, target_rot.y, 0.01)
 
 func _record_state() -> void:
 	if not mesh: return

@@ -61,10 +61,38 @@ func _on_decision_resolved(correct: bool) -> void:
 	# Subconscious Feedback (Immediate but very subtle)
 	_trigger_subconscious_hit()
 	
+	# 🧠 Scare 3: Player-triggered scare (Late-game mistakes)
+	var pm = get_tree().get_first_node_in_group("phase_manager")
+	if pm and pm.PHASES[pm.current_phase_index] == "judgment" and _mistakes >= 1:
+		trigger_scare(3)
+		return
+
 	# Lagged Punishment (The "Teeth")
-	# Consequence is decoupled from cause (5 - 15s delay)
 	var delay = randf_range(5.0, 15.0)
 	get_tree().create_timer(delay).timeout.connect(_trigger_delayed_consequence)
+
+
+func trigger_scare(index: int) -> void:
+	match index:
+		1: # False Scare: Distant Door Slam / Light Flicker
+			print("[EventManager] Scare 1: False Scare")
+			_trigger_subconscious_hit()
+			# Future: Play "door_slam" SFX
+		2: # Subtle Visual Anomaly: Hallway Shadow
+			print("[EventManager] Scare 2: Visual Anomaly")
+			_target_tension = 0.6
+		3: # Player-Triggered: Loud Bang on interaction
+			print("[EventManager] Scare 3: Player Triggered Scare")
+			if ambient_player: ambient_player.volume_db += 15.0
+			_target_tension = 0.9
+			await get_tree().create_timer(1.2).timeout
+			if ambient_player: ambient_player.volume_db -= 15.0
+		4: # Final Major Scare: Pre-ending
+			print("[EventManager] Scare 4: FINAL MAJOR SCARE")
+			Engine.time_scale = 0.5
+			_target_tension = 1.0
+			await get_tree().create_timer(0.5).timeout
+			Engine.time_scale = 1.0
 
 # ─── Internal Effects ─────────────────────────────────────────────────────────
 

@@ -3,7 +3,7 @@ extends Node
 ## Responsibility: Adaptive anomaly spawning using player behavior profiles.
 ## Counters player logic by targeting unobserved areas and countering bias.
 
-const ANOMALIES: Array[String] = ["tilt", "breath", "shift"]
+const ANOMALIES: Array[String] = ["tilt", "breath", "shift", "eye_lag", "posture"]
 var patients: Array[Node] = []
 var _current_phase: String = "shift_start"
 var _last_cycle_processed: int = -1
