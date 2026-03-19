@@ -16,7 +16,8 @@ signal evaluation_updated(state: String, id: int)
 # ─── Transit Memory (Psychological State) ─────────────────────────────────────
 
 var behavior_profile: Dictionary = {}
-var previous_profile: Dictionary = {} # Implements Adaptation Delay
+var previous_profile: Dictionary = {} # Implements Adaptation Delay (1-cycle)
+var profile_history: Array = []       # Hallucination buffer (3-cycle)
 
 var last_cycle_id: int = 0
 var _current_patient: Node = null
@@ -27,6 +28,7 @@ var _decision_locked: bool = false
 @onready var phase_manager: Node = $PhaseManager
 @onready var anomaly_manager: Node = $AnomalyManager
 @onready var evaluation_manager: Node = $EvaluationManager
+@onready var hallucination_manager: Node = get_node_or_null("HallucinationManager")
 @onready var event_manager: Node = $EventManager
 
 # These lookup group-assigned nodes at runtime
@@ -85,6 +87,11 @@ func _on_profile_updated(profile: Dictionary) -> void:
 	# Implements Lerped Adaptation Delay: Never react to the same cycle context
 	previous_profile = behavior_profile
 	behavior_profile = profile
+	
+	# Maintain 3-cycle history for Perception Corruption
+	profile_history.append(profile.duplicate())
+	if profile_history.size() > 3:
+		profile_history.pop_front()
 
 
 func _on_input_focus_entered(patient: Node) -> void:
@@ -116,6 +123,13 @@ func _on_authority_cycle_started(id: int) -> void:
 	# AnomalyManager specific direct call to avoid signal payload limits
 	if anomaly_manager:
 		anomaly_manager.prepare_cycle(id, previous_profile)
+	
+	if hallucination_manager:
+		# Delayed Causality: Use profile from 3 cycles ago (N-2)
+		var delayed_profile = {}
+		if profile_history.size() >= 3:
+			delayed_profile = profile_history[0] # The oldest
+		hallucination_manager.prepare_hallucination(id, delayed_profile)
 
 
 func _on_authority_cycle_ended(id: int) -> void:
